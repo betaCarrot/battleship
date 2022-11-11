@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>The Chatroom</title>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="container" class="col">
+        <div id="header" class="row">
+            <div id="title">Battleship</div>
+
+            <div class="spacer-grow"></div>
+
+            <div id="user-panel" class="row">
+                <div class="field-content row shadow">
+                    <span class="user-avatar"></span>
+                    <span class="user-name">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="main-panel" class="row">
+            <div id="my-panel" class="col">
+                <div class="row">
+                    <div class="board">
+                        <div class="marker"></div>
+                        <div class="marker">A</div>
+                        <div class="marker">B</div>
+                        <div class="marker">C</div>
+                        <div class="marker">D</div>
+                        <div class="marker">E</div>
+                        <div class="marker">1</div>
+                        <div class="cell ship"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="marker">2</div>
+                        <div class="cell ship"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="marker">3</div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell ship"></div>
+                        <div class="cell ship"></div>
+                        <div class="cell ship"></div>
+                        <div class="marker">4</div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="marker">5</div>
+                        <div class="cell ship"></div>
+                        <div class="cell ship"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="opponent-panel" class="col">
+                <div class="row">
+                    <div class="board">
+                        <div class="marker"></div>
+                        <div class="marker">A</div>
+                        <div class="marker">B</div>
+                        <div class="marker">C</div>
+                        <div class="marker">D</div>
+                        <div class="marker">E</div>
+                        <div class="marker">1</div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell miss"></div>
+                        <div class="marker">2</div>
+                        <div class="cell miss"></div>
+                        <div class="cell miss"></div>
+                        <div class="cell miss"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="marker">3</div>
+                        <div class="cell hit"></div>
+                        <div class="cell hit"></div>
+                        <div class="cell miss"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="marker">4</div>
+                        <div class="cell miss"></div>
+                        <div class="cell miss"></div>
+                        <div class="cell miss"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="marker">5</div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                        <div class="cell"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.min.js"></script>
+</body>
+
+</html>
