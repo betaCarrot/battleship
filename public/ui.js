@@ -120,10 +120,110 @@ const UserPanel = (function () {
     return { initialize, show, hide, update };
 })();
 
+const OnlineUsersPanel = (function () {
+
+    // This function updates the online users panel
+    const update = function (onlineUsers) {
+        const onlineUsersArea = $('#online-users-area');
+
+        // Clear the online users area
+        onlineUsersArea.empty();
+
+        // Get the current user
+        const currentUser = Authentication.getUser();
+
+        console.log(onlineUsers);
+
+        // Add the user one-by-one
+        for (const username in onlineUsers) {
+            if (username != currentUser.username) {
+                onlineUsersArea.append(
+                    $('<div id=\'username-' + username + '\' class=\'row\'></div>')
+                        .append(UI.getUserDisplay(onlineUsers[username])).append($('<span id=\'invite-' + username + '\'></span>')));
+                $('#online-users-area').on('click', '#username-' + username, () => {
+                    if ($('#invite-' + username).text() == '') {
+                        $('#invite-' + username).text('invite sent');
+                        Socket.invite(username);
+                    }
+                });
+                if (onlineUsers[username].inGame) {
+                    $('#invite-' + username).text('in game');
+                }
+            }
+        }
+    };
+
+    // This function adds a user in the panel
+    const addUser = function (user) {
+        const onlineUsersArea = $('#online-users-area');
+
+        // Find the user
+        const userDiv = onlineUsersArea.find('#username-' + user.username);
+
+        // Add the user
+        if (userDiv.length == 0) {
+            onlineUsersArea.append(
+                $('<div id=\'username-' + user.username + '\' class=\'row\'></div>')
+                    .append(UI.getUserDisplay(user)).append($('<span id=\'invite-' + user.username + '\'></span>')));
+            $('#online-users-area').on('click', '#username-' + user.username, () => {
+                if ($('#invite-' + user.username).text() == '') {
+                    $('#invite-' + user.username).text('invite sent');
+                    Socket.invite(user.username);
+                }
+            });
+        }
+    };
+
+    // This function removes a user from the panel
+    const removeUser = function (user) {
+        const onlineUsersArea = $('#online-users-area');
+
+        // Find the user
+        const userDiv = onlineUsersArea.find('#username-' + user.username);
+
+        // Remove the user
+        if (userDiv.length > 0) userDiv.remove();
+    };
+
+    const processInvite = function (username) {
+        if (confirm(username + " is inviting you to a game. Would you like to accept?")) {
+            UI.startGame(username);
+            Socket.accept(username);
+        }
+        else {
+            Socket.reject(username);
+        }
+    }
+
+    const processReject = function (username) {
+        $('#invite-' + username).text('invite rejected');
+    }
+
+    const setInGame = function (username) {
+        $('#invite-' + username).text('in game');
+    }
+
+    const hide = function () {
+        $('#pairup-overlay').fadeOut(500);
+    };
+
+    return { update, addUser, removeUser, processInvite, processReject, setInGame, hide };
+})();
+
 const UI = (function () {
+
+    const getUserDisplay = function (user) {
+        return $('<div class=\'field-content row shadow\'></div>')
+            .append(
+                $('<span class=\'user-avatar\'>' + Avatar.getCode(user.avatar) +
+                    '</span>'))
+            .append($('<span class=\'user-name\'>' + user.name + '</span>'));
+    };
 
     SignInForm.initialize();
     UserPanel.initialize();
+
+    let opponent = null;
 
     const ships = [];
 
@@ -139,13 +239,11 @@ const UI = (function () {
         if (length == 0) return true;
         if (curr % 10 > 5) return false;
         const cell = $("#" + curr);
-        console.log(cell.css("background-color"));
         if (cell.css("background-color") == $(selectedShip).css("background-color")) return false;
         return checkEmpty(curr + 1, length - 1);
     }
 
     function occupy(curr, length) {
-        console.log(curr, length);
         if (length == 0) return;
         ships.push(curr);
         const cell = $("#" + curr);
@@ -169,6 +267,17 @@ const UI = (function () {
         Socket.shoot(parseInt(event.target.id) - 900);
     });
 
+    function startGame(username) {
+        opponent = username;
+    }
+
+    function checkDisconnection(username) {
+        if (opponent && opponent == username) {
+            alert("Opponent has disconnected");
+            window.location.reload();
+        }
+    }
+
     function updateMyBoard(id) {
         const cell = $("#" + id);
         if (ships.includes(parseInt(id))) {
@@ -191,6 +300,6 @@ const UI = (function () {
         }
     }
 
-    return { updateMyBoard, updateOpponentBoard };
+    return { getUserDisplay, startGame, checkDisconnection, updateMyBoard, updateOpponentBoard };
 
 })();

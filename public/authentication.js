@@ -31,7 +31,6 @@ const Authentication = (function () {
                 }
                 else {
                     user = json.user;
-                    console.log(user);
                     if (onSuccess) onSuccess();
                 }
             })

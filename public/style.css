@@ -314,6 +314,22 @@ button.icon:active {
     white-space: nowrap;
 }
 
+/* Online users panel */
+#online-users-panel {
+    flex: 0 0 250px;
+    height: 100%;
+    padding: 0;
+    background: var(--online-users-panel-background);
+}
+
+#online-users-area {
+    flex-grow: 1;
+    width: 100%;
+    align-items: flex-start;
+    justify-content: start;
+    overflow-y: auto;
+}
+
 /* Signin overlay */
 #signin-form {
     width: 270px;
