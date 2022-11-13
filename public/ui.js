@@ -225,9 +225,13 @@ const UI = (function () {
 
     let opponent = null;
 
+    let horizontal = true;
+
     const ships = [];
 
     let selectedShip = null;
+
+    let numPlaced = 0;
 
     $(".setup-ship").on("click", (event) => {
         selectedShip = event.target;
@@ -237,10 +241,13 @@ const UI = (function () {
 
     function checkEmpty(curr, length) {
         if (length == 0) return true;
-        if (curr % 10 > 5) return false;
+        if (curr % 10 > 5 || curr > 60) return false;
         const cell = $("#" + curr);
         if (cell.css("background-color") == $(selectedShip).css("background-color")) return false;
-        return checkEmpty(curr + 1, length - 1);
+        if (horizontal)
+            return checkEmpty(curr + 1, length - 1);
+        else
+            return checkEmpty(curr + 10, length - 1);
     }
 
     function occupy(curr, length) {
@@ -248,7 +255,37 @@ const UI = (function () {
         ships.push(curr);
         const cell = $("#" + curr);
         cell.css("background-color", "orange");
-        occupy(curr + 1, length - 1);
+        if (horizontal)
+            occupy(curr + 1, length - 1);
+        else
+            occupy(curr + 10, length - 1);
+    }
+
+    function indicate(curr, length) {
+        if (length == 0) return;
+        const cell = $("#" + curr);
+        cell.css("background-color", "#FED8B1");
+        if (horizontal)
+            indicate(curr + 1, length - 1);
+        else
+            indicate(curr + 10, length - 1);
+    }
+
+    function unindicate(curr, length) {
+        if (length == 0) return;
+        const cell = $("#" + curr);
+        cell.css("background-color", "blue");
+        if (horizontal)
+            unindicate(curr + 1, length - 1);
+        else
+            unindicate(curr + 10, length - 1);
+    }
+
+    function reset() {
+        $(".cell").css("background-color", "blue");
+        $(".setup-ship").show();
+        $("#rotate-button").show();
+        $("#ready-button").hide();
     }
 
     $(".cell").on("click", (event) => {
@@ -257,15 +294,49 @@ const UI = (function () {
             const id = parseInt(event.target.id);
             if (checkEmpty(id, length)) {
                 occupy(id, length);
+                numPlaced++;
+                $(selectedShip).css("border", "1px solid black");
                 $(selectedShip).hide();
                 selectedShip = null;
+                horizontal = true;
+                if (numPlaced == 3) {
+                    $("#rotate-button").hide();
+                    $("#ready-button").show();
+                }
             }
         }
     })
 
+    $(".cell").on({
+        mouseenter: function (event) {
+            if (selectedShip) {
+                const length = parseInt(selectedShip.id);
+                const id = parseInt(event.target.id);
+                if (checkEmpty(id, length)) {
+                    indicate(id, length);
+                }
+            }
+        },
+        mouseleave: function (event) {
+            if (selectedShip) {
+                const length = parseInt(selectedShip.id);
+                const id = parseInt(event.target.id);
+                if (checkEmpty(id, length)) {
+                    unindicate(id, length);
+                }
+            }
+        }
+    });
+
     $(".cell-opponent").on("click", (event) => {
         Socket.shoot(parseInt(event.target.id) - 900);
     });
+
+    $("#rotate-button").on("click", () => {
+        horizontal = !horizontal;
+    });
+
+    $("#reset-button").on("click", reset);
 
     function startGame(username) {
         opponent = username;
