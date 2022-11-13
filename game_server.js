@@ -167,17 +167,58 @@ const { Server } = require("socket.io");
 const httpServer = createServer(app);
 const io = new Server(httpServer);
 
+const onlineUsers = {};
+const inGameUsers = {};
+
 io.on("connection", (socket) => {
+    if (socket.request.session.user) {
+        const { username, avatar, name } = socket.request.session.user;
+        onlineUsers[username] = { avatar, name, inGame: false };
+        io.emit("add user", JSON.stringify(socket.request.session.user));
+    }
+
+    socket.on("disconnect", () => {
+        if (socket.request.session.user) {
+            const { username } = socket.request.session.user;
+            if (onlineUsers[username]) delete onlineUsers[username];
+            io.emit("remove user", JSON.stringify(socket.request.session.user));
+        }
+    });
+
+    socket.on("get users", () => {
+        socket.emit("users", JSON.stringify(onlineUsers));
+    });
+
     socket.on("shoot", (id) => {
-        const { username } = socket.request.session.user
-        console.log(username, id);
+        const { username } = socket.request.session.user;
         io.emit("target", JSON.stringify({ username, id: id }));
     });
 
     socket.on("result", (res) => {
-        console.log(res);
         io.emit("post result", res);
-    })
+    });
+
+    socket.on("invite", (target) => {
+        const { username } = socket.request.session.user;
+        io.emit("post invite", JSON.stringify({ username, target: target }));
+    });
+
+    socket.on("accept", (target) => {
+        const { username } = socket.request.session.user;
+        if (onlineUsers[username] && onlineUsers[target] && !onlineUsers[username].inGame && !onlineUsers[target].inGame) {
+            onlineUsers[username].inGame = true;
+            onlineUsers[target].inGame = true;
+            io.emit("post accept", JSON.stringify({ username, target }));
+        }
+        else {
+            io.emit("game unavailable", username);
+        }
+    });
+
+    socket.on("reject", (target) => {
+        const { username } = socket.request.session.user;
+        io.emit("post reject", JSON.stringify({ username, target }));
+    });
 });
 
 io.use((socket, next) => {

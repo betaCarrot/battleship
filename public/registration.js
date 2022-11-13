@@ -14,7 +14,6 @@ const Registration = (function () {
         // A. Preparing the user data
         //
         const json = JSON.stringify({ username, avatar, name, password });
-        console.log(json);
         //
         // B. Sending the AJAX request to the server
         //
