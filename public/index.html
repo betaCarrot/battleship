@@ -20,6 +20,7 @@
                     <span class="user-avatar"></span>
                     <span class="user-name">-</span>
                 </div>
+                <button id="signout-button" class="icon"><span class="material-icons">logout</span></button>
             </div>
         </div>
 
@@ -34,35 +35,47 @@
                         <div class="marker">D</div>
                         <div class="marker">E</div>
                         <div class="marker">1</div>
-                        <div class="cell ship"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                        <div class="cell" id="11"></div>
+                        <div class="cell" id="12"></div>
+                        <div class="cell" id="13"></div>
+                        <div class="cell" id="14"></div>
+                        <div class="cell" id="15"></div>
                         <div class="marker">2</div>
-                        <div class="cell ship"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                        <div class="cell" id="21"></div>
+                        <div class="cell" id="22"></div>
+                        <div class="cell" id="23"></div>
+                        <div class="cell" id="24"></div>
+                        <div class="cell" id="25"></div>
                         <div class="marker">3</div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell ship"></div>
-                        <div class="cell ship"></div>
-                        <div class="cell ship"></div>
+                        <div class="cell" id="31"></div>
+                        <div class="cell" id="32"></div>
+                        <div class="cell" id="33"></div>
+                        <div class="cell" id="34"></div>
+                        <div class="cell" id="35"></div>
                         <div class="marker">4</div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                        <div class="cell" id="41"></div>
+                        <div class="cell" id="42"></div>
+                        <div class="cell" id="43"></div>
+                        <div class="cell" id="44"></div>
+                        <div class="cell" id="45"></div>
                         <div class="marker">5</div>
-                        <div class="cell ship"></div>
-                        <div class="cell ship"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                        <div class="cell" id="51"></div>
+                        <div class="cell" id="52"></div>
+                        <div class="cell" id="53"></div>
+                        <div class="cell" id="54"></div>
+                        <div class="cell" id="55"></div>
+                    </div>
+                </div>
+                <div id="setup-container" class="row">
+                    <div id="ship-container" class="col">
+                        <div class="setup-ship" id="3">Ship 1</div>
+                        <div class="setup-ship" id="2">Ship 2</div>
+                        <div class="setup-ship" id="2">Ship 3</div>
+                    </div>
+                    <div id="control-container" class="col">
+                        <button id="rotate-button">rorate</button>
+                        <button id="reset-button">reset</button>
+                        <button id="ready-button" style="display:none">ready</button>
                     </div>
                 </div>
             </div>
@@ -77,42 +90,99 @@
                         <div class="marker">D</div>
                         <div class="marker">E</div>
                         <div class="marker">1</div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell miss"></div>
+                        <div class="cell-opponent" id="911"></div>
+                        <div class="cell-opponent" id="912"></div>
+                        <div class="cell-opponent" id="913"></div>
+                        <div class="cell-opponent" id="914"></div>
+                        <div class="cell-opponent" id="915"></div>
                         <div class="marker">2</div>
-                        <div class="cell miss"></div>
-                        <div class="cell miss"></div>
-                        <div class="cell miss"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                        <div class="cell-opponent" id="921"></div>
+                        <div class="cell-opponent" id="922"></div>
+                        <div class="cell-opponent" id="923"></div>
+                        <div class="cell-opponent" id="924"></div>
+                        <div class="cell-opponent" id="925"></div>
                         <div class="marker">3</div>
-                        <div class="cell hit"></div>
-                        <div class="cell hit"></div>
-                        <div class="cell miss"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                        <div class="cell-opponent" id="931"></div>
+                        <div class="cell-opponent" id="932"></div>
+                        <div class="cell-opponent" id="933"></div>
+                        <div class="cell-opponent" id="934"></div>
+                        <div class="cell-opponent" id="935"></div>
                         <div class="marker">4</div>
-                        <div class="cell miss"></div>
-                        <div class="cell miss"></div>
-                        <div class="cell miss"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                        <div class="cell-opponent" id="941"></div>
+                        <div class="cell-opponent" id="942"></div>
+                        <div class="cell-opponent" id="943"></div>
+                        <div class="cell-opponent" id="944"></div>
+                        <div class="cell-opponent" id="945"></div>
                         <div class="marker">5</div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
-                        <div class="cell"></div>
+                        <div class="cell-opponent" id="951"></div>
+                        <div class="cell-opponent" id="952"></div>
+                        <div class="cell-opponent" id="953"></div>
+                        <div class="cell-opponent" id="954"></div>
+                        <div class="cell-opponent" id="955"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <div id="pairup-overlay" class="overlay row">
+        <div id="online-users-panel" class="col">
+            <div id="online-users-area" class="col"></div>
+        </div>
+    </div>
+
+    <div id="signin-overlay" class="overlay row">
+        <div class="content shadow row">
+            <form id="signin-form" class="col">
+                <div class="caption">SIGN IN WITH YOUR ACCOUNT</div>
+                <div class="spacer-0"></div>
+                <input id="signin-username" placeholder="Enter your username"></input>
+                <input id="signin-password" type="password" placeholder="Enter your password"></input>
+                <div class="spacer-0"></div>
+                <button type="submit">Sign In</button>
+                <div id="signin-message" class="warning center"></div>
+                <div class="spacer-grow"></div>
+            </form>
+
+            <div class="spacer-0"></div>
+
+            <form id="register-form" class="col">
+                <div class="caption">OR, REGISTER IF YOU DO NOT HAVE ONE</div>
+                <div class="spacer-0"></div>
+                <input id="register-username" maxlength="10" placeholder="Enter your username"></input>
+                <select id="register-avatar">
+                    <option value="">Select your avatar</option>
+                </select>
+                <input id="register-name" maxlength="16" placeholder="Enter your name"></input>
+                <input id="register-password" type="password" placeholder="Enter your password"></input>
+                <input id="register-confirm" type="password" placeholder="Enter your password again"></input>
+                <div class="spacer-0"></div>
+                <button type="submit">Register</button>
+                <div id="register-message" class="warning center"></div>
+            </form>
+        </div>
+    </div>
+
+
+
     <script src="/socket.io/socket.io.min.js"></script>
+    <script src="socket.js"></script>
+    <script src="avatar.js"></script>
+    <script src="ui.js"></script>
+    <script src="registration.js"></script>
+    <script src="authentication.js"></script>
+    <script>
+        Authentication.validate(
+            () => {
+                SignInForm.hide();
+                UserPanel.update(Authentication.getUser());
+                UserPanel.show();
+
+                Socket.connect();
+            },
+            () => { SignInForm.show(); }
+        );
+    </script>
 </body>
 
 </html>
