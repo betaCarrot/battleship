@@ -70,7 +70,7 @@ const Socket = (function () {
             const { username, target } = JSON.parse(json);
             if ($('#user-panel .user-name').text() == target) {
                 OnlineUsersPanel.hide();
-                UI.startGame(username);
+                UI.startPreparation(username, true);
             }
             else {
                 OnlineUsersPanel.setInGame(username);
@@ -88,6 +88,13 @@ const Socket = (function () {
         socket.on("game unavailable", (username) => {
             if ($('#user-panel .user-name').text() == username) {
                 alert("This game is no longer available");
+                window.location.reload();
+            }
+        });
+
+        socket.on("post ready", (target) => {
+            if ($('#user-panel .user-name').text() == target) {
+                UI.processReady();
             }
         });
 
@@ -116,5 +123,9 @@ const Socket = (function () {
         socket.emit("reject", username);
     }
 
-    return { getSocket, connect, shoot, disconnect, invite, accept, reject };
+    const ready = function (username) {
+        socket.emit("ready", username);
+    }
+
+    return { getSocket, connect, shoot, disconnect, invite, accept, reject, ready };
 })();

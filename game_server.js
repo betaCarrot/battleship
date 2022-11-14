@@ -219,6 +219,10 @@ io.on("connection", (socket) => {
         const { username } = socket.request.session.user;
         io.emit("post reject", JSON.stringify({ username, target }));
     });
+
+    socket.on('ready', (target) => {
+        io.emit("post ready", target);
+    });
 });
 
 io.use((socket, next) => {

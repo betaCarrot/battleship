@@ -77,10 +77,12 @@
                         <button id="reset-button">reset</button>
                         <button id="ready-button" style="display:none">ready</button>
                     </div>
+                    <div id="waiting-message" class="blink" style="display:none">Waiting for opponent...</div>
                 </div>
+
             </div>
 
-            <div id="opponent-panel" class="col">
+            <div id="opponent-panel" class="col" style="display:none">
                 <div class="row">
                     <div class="board">
                         <div class="marker"></div>
@@ -121,12 +123,15 @@
                         <div class="cell-opponent" id="955"></div>
                     </div>
                 </div>
+                <div id="result-message" class="row"></div>
             </div>
         </div>
     </div>
 
     <div id="pairup-overlay" class="overlay row">
         <div id="online-users-panel" class="col">
+            <div id="online-users-title" class="caption col">Online Users</div>
+            <div class="spacer-0"></div>
             <div id="online-users-area" class="col"></div>
         </div>
     </div>
