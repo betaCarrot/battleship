@@ -187,7 +187,7 @@ const OnlineUsersPanel = (function () {
 
     const processInvite = function (username) {
         if (confirm(username + " is inviting you to a game. Would you like to accept?")) {
-            UI.startGame(username);
+            UI.startPreparation(username, false);
             Socket.accept(username);
         }
         else {
@@ -228,10 +228,19 @@ const UI = (function () {
     let horizontal = true;
 
     const ships = [];
+    const shots = [];
 
     let selectedShip = null;
 
     let numPlaced = 0;
+
+    let readied = false;
+
+    let opponentReadied = false;
+
+    let inGame = false;
+
+    let myTurn = false;
 
     $(".setup-ship").on("click", (event) => {
         selectedShip = event.target;
@@ -282,10 +291,48 @@ const UI = (function () {
     }
 
     function reset() {
+        numPlaced = 0;
         $(".cell").css("background-color", "blue");
         $(".setup-ship").show();
         $("#rotate-button").show();
         $("#ready-button").hide();
+    }
+
+    function ready() {
+        $("#ship-container").hide();
+        $("#control-container").hide();
+        $("#waiting-message").show();
+        readied = true;
+        if (opponentReadied) {
+            inGame = true;
+            startGame();
+        }
+        Socket.ready(opponent);
+    }
+
+    function processReady() {
+        if (inGame) return;
+        if (readied) {
+            inGame = true;
+            startGame();
+        }
+        else {
+            opponentReadied = true;
+        }
+    }
+
+    function startGame() {
+        if (myTurn) {
+            $("#waiting-message").text("Your turn");
+            $("#waiting-message").css("color", "green");
+            $("#waiting-message").css("animation", "none");
+        } else {
+            $("#waiting-message").text("Waiting for opponent...");
+            $("#waiting-message").css("color", "red");
+            $("#waiting-message").css("animation", "blinker 2s step-start infinite");
+            $("#waiting-message").css("animation-delay", "0.75s");
+        }
+        $("#opponent-panel").show();
     }
 
     $(".cell").on("click", (event) => {
@@ -329,7 +376,31 @@ const UI = (function () {
     });
 
     $(".cell-opponent").on("click", (event) => {
-        Socket.shoot(parseInt(event.target.id) - 900);
+        const id = parseInt(event.target.id) - 900;
+        if (myTurn && !shots.includes(id)) {
+            Socket.shoot(parseInt(event.target.id) - 900);
+            myTurn = false;
+            $("#waiting-message").text("Waiting for opponent...");
+            $("#waiting-message").css("color", "red");
+            $("#waiting-message").css("animation", "blinker 2s step-start infinite");
+            $("#waiting-message").css("animation-delay", "0.75s");
+            shots.push(id);
+        }
+    });
+
+    $(".cell-opponent").on({
+        mouseenter: function (event) {
+            const id = parseInt(event.target.id) - 900;
+            if (myTurn && !shots.includes(id)) {
+                $(event.target).css("background-color", "white");
+            }
+        },
+        mouseleave: function (event) {
+            const id = parseInt(event.target.id) - 900;
+            if (myTurn && !shots.includes(id)) {
+                $(event.target).css("background-color", "blue");
+            }
+        }
     });
 
     $("#rotate-button").on("click", () => {
@@ -338,8 +409,11 @@ const UI = (function () {
 
     $("#reset-button").on("click", reset);
 
-    function startGame(username) {
+    $("#ready-button").on("click", ready);
+
+    function startPreparation(username, turn) {
         opponent = username;
+        myTurn = turn;
     }
 
     function checkDisconnection(username) {
@@ -351,6 +425,10 @@ const UI = (function () {
 
     function updateMyBoard(id) {
         const cell = $("#" + id);
+        myTurn = true;
+        $("#waiting-message").text("Your turn");
+        $("#waiting-message").css("color", "green");
+        $("#waiting-message").css("animation", "none");
         if (ships.includes(parseInt(id))) {
             cell.css("background-color", "red");
             return "hit";
@@ -365,12 +443,14 @@ const UI = (function () {
         const cell = $("#9" + id);
         if (state == "hit") {
             cell.css("background-color", "red");
+            $("#result-message").text("Hit!");
         }
         else {
             cell.css("background-color", "lightblue");
+            $("#result-message").text("miss...");
         }
     }
 
-    return { getUserDisplay, startGame, checkDisconnection, updateMyBoard, updateOpponentBoard };
+    return { getUserDisplay, startPreparation, processReady, startGame, checkDisconnection, updateMyBoard, updateOpponentBoard };
 
 })();

@@ -207,6 +207,27 @@ body {
     width: 120px;
 }
 
+#waiting-message {
+    color: red;
+    font-weight: bold;
+}
+
+#result-message {
+    color: red;
+    font-weight: bold;
+}
+
+.blink {
+    animation: blinker 2s step-start infinite;
+    animation-delay: 0.75s;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
 /* Overlay */
 .overlay {
     position: fixed;
