@@ -242,6 +242,12 @@ const UI = (function () {
 
     let myTurn = false;
 
+    let sunk = 0;
+
+    let targetsHit = 0;
+
+    let missilesLaunched = 0;
+
     $(".setup-ship").on("click", (event) => {
         selectedShip = event.target;
         $(".setup-ship").css("border", "1px solid black");
@@ -378,6 +384,8 @@ const UI = (function () {
     $(".cell-opponent").on("click", (event) => {
         const id = parseInt(event.target.id) - 900;
         if (myTurn && !shots.includes(id)) {
+            missilesLaunched++;
+            console.log("missles", missilesLaunched);
             Socket.shoot(parseInt(event.target.id) - 900);
             myTurn = false;
             $("#waiting-message").text("Waiting for opponent...");
@@ -423,6 +431,21 @@ const UI = (function () {
         }
     }
 
+    function endGame(win) {
+        if (win) {
+            $("#game-result").text("YOU WON!");
+            $("#game-result").css("color", "green");
+        }
+        else {
+            $("#game-result").text("YOU LOST...");
+            $("#game-result").css("color", "red");
+        }
+        $("#targets-hit").text(targetsHit);
+        $("#missiles-launched").text(missilesLaunched);
+        $("#accuracy").text(Math.round(targetsHit * 100 / missilesLaunched) + '%');
+        $("#stats-overlay").show();
+    }
+
     function updateMyBoard(id) {
         const cell = $("#" + id);
         myTurn = true;
@@ -431,6 +454,11 @@ const UI = (function () {
         $("#waiting-message").css("animation", "none");
         if (ships.includes(parseInt(id))) {
             cell.css("background-color", "red");
+            sunk++;
+            if (sunk == 7) {
+                endGame(false);
+                return "defeat";
+            }
             return "hit";
         }
         else {
@@ -441,7 +469,14 @@ const UI = (function () {
 
     function updateOpponentBoard(id, state) {
         const cell = $("#9" + id);
-        if (state == "hit") {
+        if (state == "defeat") {
+            targetsHit++;
+            cell.css("background-color", "red");
+            $("#result-message").text("Hit!");
+            endGame(true);
+        }
+        else if (state == "hit") {
+            targetsHit++;
             cell.css("background-color", "red");
             $("#result-message").text("Hit!");
         }
