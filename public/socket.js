@@ -98,6 +98,11 @@ const Socket = (function () {
             }
         });
 
+        socket.on("post ranking", (json) => {
+            const rankings = JSON.parse(json);
+            RankingPanel.update(rankings);
+        });
+
     };
 
     const shoot = function (id) {
@@ -127,5 +132,13 @@ const Socket = (function () {
         socket.emit("ready", username);
     }
 
-    return { getSocket, connect, shoot, disconnect, invite, accept, reject, ready };
+    const ranking = function () {
+        socket.emit("ranking");
+    }
+
+    const insert = function (accuracy) {
+        socket.emit("insert", accuracy);
+    }
+
+    return { getSocket, connect, shoot, disconnect, invite, accept, reject, ready, ranking, insert };
 })();

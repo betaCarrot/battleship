@@ -210,6 +210,40 @@ const OnlineUsersPanel = (function () {
     return { update, addUser, removeUser, processInvite, processReject, setInGame, hide };
 })();
 
+const RankingPanel = (function () {
+
+    const initialize = function () {
+        $("#proceed-button").on("click", () => {
+            Socket.ranking();
+        })
+        $("#return-button").on("click", () => {
+            window.location.reload();
+        })
+    };
+
+    // This function updates the online users panel
+    const update = function (rankedUsers) {
+        const RankingTable = $('#table-body');
+
+        RankingTable.empty();
+
+        // Add the user one-by-one
+        for (let i = 0; i < rankedUsers.length; i++) {
+            const { username, accuracy } = rankedUsers[i];
+            if ($('#user-panel .user-name').text() == username) {
+                RankingTable.append('<tr class=\'active-row\'><td>' + (i + 1) + '</td><td>' + username + '</td><td>' + accuracy + '%</td>')
+            }
+            else {
+                RankingTable.append('<tr><td>' + (i + 1) + '</td><td>' + username + '</td><td>' + accuracy + '%</td>');
+            }
+        }
+        $("#stats-overlay").hide();
+        $("#ranking-overlay").show();
+    };
+
+    return { initialize, update };
+})();
+
 const UI = (function () {
 
     const getUserDisplay = function (user) {
@@ -220,8 +254,11 @@ const UI = (function () {
             .append($('<span class=\'user-name\'>' + user.name + '</span>'));
     };
 
+
+
     SignInForm.initialize();
     UserPanel.initialize();
+    RankingPanel.initialize();
 
     let opponent = null;
 
@@ -432,6 +469,9 @@ const UI = (function () {
     }
 
     function endGame(win) {
+        opponent = null;
+        $("#waiting-message").text("");
+        $("#waiting-message").css("animation", "none");
         if (win) {
             $("#game-result").text("YOU WON!");
             $("#game-result").css("color", "green");
@@ -442,7 +482,9 @@ const UI = (function () {
         }
         $("#targets-hit").text(targetsHit);
         $("#missiles-launched").text(missilesLaunched);
-        $("#accuracy").text(Math.round(targetsHit * 100 / missilesLaunched) + '%');
+        const accuracy = Math.round(targetsHit * 100 / missilesLaunched);
+        Socket.insert(accuracy);
+        $("#accuracy").text(accuracy + '%');
         $("#stats-overlay").show();
     }
 
