@@ -131,7 +131,6 @@
     <div id="pairup-overlay" class="overlay row">
         <div id="online-users-panel" class="col">
             <div id="online-users-title" class="caption col">Online Users</div>
-            <div class="spacer-0"></div>
             <div id="online-users-area" class="col"></div>
         </div>
     </div>
@@ -165,6 +164,29 @@
                 <button type="submit">Register</button>
                 <div id="register-message" class="warning center"></div>
             </form>
+        </div>
+    </div>
+
+    <div id="stats-overlay" class="overlay row" style="display:none">
+        <div class="content shadow col">
+            <div id="game-result" style="font-size:200%; color:green">YOU WON!</div>
+            <div class=" row">
+                <div id="stats-1" class="col">
+                    <div class="caption">TARGETS HIT</div>
+                    <div class="number" id="targets-hit" style="font-size:200%"></div>
+                    <div class="spacer-0"></div>
+                    <div class="caption">MISSILES LAUNCHED</div>
+                    <div class="number" id="missiles-launched" style="font-size:200%"></div>
+                </div>
+
+                <div class="spacer-0"></div>
+
+                <div id="stats-2" class="col">
+                    <div class="caption">ACCURACY</div>
+                    <div class="number" id="accuracy" style="font-size:400%"></div>
+                </div>
+            </div>
+            <button>Proceed to ranking --></button>
         </div>
     </div>
 
