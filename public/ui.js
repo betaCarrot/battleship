@@ -264,10 +264,11 @@ const UI = (function () {
 
     let horizontal = true;
 
-    const ships = [];
+    let ships = [];
     const shots = [];
 
     let selectedShip = null;
+    let selectedShipLength = 0;
 
     let numPlaced = 0;
 
@@ -285,17 +286,38 @@ const UI = (function () {
 
     let missilesLaunched = 0;
 
-    $(".setup-ship").on("click", (event) => {
-        selectedShip = event.target;
-        $(".setup-ship").css("border", "1px solid black");
-        $(event.target).css("border", "5px solid red");
+    $(".battleship-container").on("click", (event) => {
+        selectedShip = "battleship";
+        selectedShipLength = 4;
+        $(".submarine-container").css("border", "none");
+        $(".destroyer-container").css("border", "none");
+        $(".battleship-container").css("border", "5px solid red");
+        horizontal = true;
+    });
+
+    $(".submarine-container").on("click", (event) => {
+        selectedShip = "submarine";
+        selectedShipLength = 3;
+        $(".battleship-container").css("border", "none");
+        $(".destroyer-container").css("border", "none");
+        $(".submarine-container").css("border", "5px solid red");
+        horizontal = true;
+    });
+
+    $(".destroyer-container").on("click", (event) => {
+        selectedShip = "destroyer";
+        selectedShipLength = 2;
+        $(".battleship-container").css("border", "none");
+        $(".submarine-container").css("border", "none");
+        $(".destroyer-container").css("border", "5px solid red");
+        horizontal = true;
     });
 
     function checkEmpty(curr, length) {
         if (length == 0) return true;
         if (curr % 10 > 5 || curr > 60) return false;
         const cell = $("#" + curr);
-        if (cell.css("background-color") == $(selectedShip).css("background-color")) return false;
+        if (ships.includes(curr)) return false;
         if (horizontal)
             return checkEmpty(curr + 1, length - 1);
         else
@@ -306,11 +328,17 @@ const UI = (function () {
         if (length == 0) return;
         ships.push(curr);
         const cell = $("#" + curr);
-        cell.css("background-color", "orange");
-        if (horizontal)
+        console.log(selectedShipLength - length);
+        cell.css("background-image", "url(images/" + selectedShip + (selectedShipLength - length) + ".png)");
+        cell.css("background-size", "cover");
+        cell.css("background-color", "blue");
+        if (horizontal) {
+            cell.css("transform", "rotate(-90deg)");
             occupy(curr + 1, length - 1);
-        else
+        }
+        else {
             occupy(curr + 10, length - 1);
+        }
     }
 
     function indicate(curr, length) {
@@ -335,8 +363,12 @@ const UI = (function () {
 
     function reset() {
         numPlaced = 0;
+        ships = [];
         $(".cell").css("background-color", "blue");
-        $(".setup-ship").show();
+        $(".cell").css("background-image", "none");
+        $(".battleship-container").show();
+        $(".submarine-container").show();
+        $(".destroyer-container").show();
         $("#rotate-button").show();
         $("#ready-button").hide();
     }
@@ -380,13 +412,12 @@ const UI = (function () {
 
     $(".cell").on("click", (event) => {
         if (selectedShip) {
-            const length = parseInt(selectedShip.id);
             const id = parseInt(event.target.id);
-            if (checkEmpty(id, length)) {
-                occupy(id, length);
+            if (checkEmpty(id, selectedShipLength)) {
+                occupy(id, selectedShipLength);
                 numPlaced++;
-                $(selectedShip).css("border", "1px solid black");
-                $(selectedShip).hide();
+                $('.' + selectedShip + '-container').css("border", "none");
+                $('.' + selectedShip + '-container').hide();
                 selectedShip = null;
                 horizontal = true;
                 if (numPlaced == 3) {
@@ -400,19 +431,17 @@ const UI = (function () {
     $(".cell").on({
         mouseenter: function (event) {
             if (selectedShip) {
-                const length = parseInt(selectedShip.id);
                 const id = parseInt(event.target.id);
-                if (checkEmpty(id, length)) {
-                    indicate(id, length);
+                if (checkEmpty(id, selectedShipLength)) {
+                    indicate(id, selectedShipLength);
                 }
             }
         },
         mouseleave: function (event) {
             if (selectedShip) {
-                const length = parseInt(selectedShip.id);
                 const id = parseInt(event.target.id);
-                if (checkEmpty(id, length)) {
-                    unindicate(id, length);
+                if (checkEmpty(id, selectedShipLength)) {
+                    unindicate(id, selectedShipLength);
                 }
             }
         }
@@ -496,8 +525,9 @@ const UI = (function () {
         $("#waiting-message").css("animation", "none");
         if (ships.includes(parseInt(id))) {
             cell.css("background-color", "red");
+            cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
             sunk++;
-            if (sunk == 7) {
+            if (sunk == 9) {
                 endGame(false);
                 return "defeat";
             }
@@ -505,6 +535,7 @@ const UI = (function () {
         }
         else {
             cell.css("background-color", "lightblue");
+            cell.append("<iframe src=\"https://giphy.com/embed/YOk7USZ9k8yF4R0yn3\" width=\"100%\"height=\"100%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
             return "miss";
         }
     }
@@ -514,16 +545,19 @@ const UI = (function () {
         if (state == "defeat") {
             targetsHit++;
             cell.css("background-color", "red");
+            cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
             $("#result-message").text("Hit!");
             endGame(true);
         }
         else if (state == "hit") {
             targetsHit++;
             cell.css("background-color", "red");
+            cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
             $("#result-message").text("Hit!");
         }
         else {
             cell.css("background-color", "lightblue");
+            cell.append("<iframe src=\"https://giphy.com/embed/YOk7USZ9k8yF4R0yn3\" width=\"100%\"height=\"100%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
             $("#result-message").text("miss...");
         }
     }
