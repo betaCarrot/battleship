@@ -194,18 +194,92 @@ body {
 }
 
 .setup-ship {
-    display: flex;
-    width: 180px;
-    height: 60px;
-    justify-content: center;
-    align-items: center;
-    background-color: orange;
-    border: 1px solid black;
+    border: none;
 }
 
-[id='2'] {
-    width: 120px;
+.battleship,
+.submarine,
+.destroyer {
+    display: flex;
 }
+
+.battleship-container {
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 60px);
+    grid-template-rows: repeat(1, 60px);
+}
+
+#b0 {
+    background-image: url(images/battleship0.png);
+    background-size: cover;
+    transform: rotate(-90deg);
+}
+
+#b1 {
+    background-image: url(images/battleship1.png);
+    background-size: cover;
+    transform: rotate(-90deg);
+}
+
+#b2 {
+    background-image: url(images/battleship2.png);
+    background-size: cover;
+    transform: rotate(-90deg);
+}
+
+#b3 {
+    background-image: url(images/battleship3.png);
+    background-size: cover;
+    transform: rotate(-90deg);
+}
+
+.submarine-container {
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 60px);
+    grid-template-rows: repeat(1, 60px);
+}
+
+#s0 {
+    background-image: url(images/submarine0.png);
+    background-size: cover;
+    transform: rotate(-90deg);
+}
+
+#s1 {
+    background-image: url(images/submarine1.png);
+    background-size: cover;
+    transform: rotate(-90deg);
+}
+
+#s2 {
+    background-image: url(images/submarine2.png);
+    background-size: cover;
+    transform: rotate(-90deg);
+}
+
+
+
+.destroyer-container {
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, 60px);
+    grid-template-rows: repeat(1, 60px);
+}
+
+#d0 {
+    background-image: url(images/destroyer0.png);
+    background-size: cover;
+    transform: rotate(-90deg);
+}
+
+#d1 {
+    background-image: url(images/destroyer1.png);
+    background-size: cover;
+    transform: rotate(-90deg);
+}
+
 
 #waiting-message {
     color: red;
