@@ -189,12 +189,20 @@ io.on("connection", (socket) => {
         socket.emit("users", JSON.stringify(onlineUsers));
     });
 
-    socket.on("shoot", (id) => {
-        const { username } = socket.request.session.user;
-        io.emit("target", JSON.stringify({ username, id: id }));
+    socket.on("shoot", (json) => {
+        io.emit("target", json);
+    });
+
+    socket.on("sunk", (json) => {
+        io.emit("post sunk", json);
+    });
+
+    socket.on("cheat", (username) => {
+        io.emit("post cheat", username);
     });
 
     socket.on("result", (res) => {
+        console.log(res);
         io.emit("post result", res);
     });
 

@@ -259,8 +259,6 @@ body {
     transform: rotate(-90deg);
 }
 
-
-
 .destroyer-container {
     margin: 0 auto;
     display: grid;
@@ -300,6 +298,10 @@ body {
     50% {
         opacity: 0;
     }
+}
+
+svg {
+    position: absolute;
 }
 
 /* Overlay */
