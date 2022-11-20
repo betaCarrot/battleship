@@ -89,7 +89,7 @@ const UserPanel = (function () {
             // Send a signout request
             Authentication.signout(() => {
                 Socket.disconnect();
-
+                window.location.reload();
                 hide();
                 SignInForm.show();
             });
@@ -131,8 +131,6 @@ const OnlineUsersPanel = (function () {
 
         // Get the current user
         const currentUser = Authentication.getUser();
-
-        console.log(onlineUsers);
 
         // Add the user one-by-one
         for (const username in onlineUsers) {
@@ -254,8 +252,6 @@ const UI = (function () {
             .append($('<span class=\'user-name\'>' + user.name + '</span>'));
     };
 
-
-
     SignInForm.initialize();
     UserPanel.initialize();
     RankingPanel.initialize();
@@ -264,7 +260,11 @@ const UI = (function () {
 
     let horizontal = true;
 
-    let ships = [];
+    let ships = {
+        battleship: [],
+        submarine: [],
+        destroyer: []
+    }
     const shots = [];
 
     let selectedShip = null;
@@ -280,11 +280,17 @@ const UI = (function () {
 
     let myTurn = false;
 
-    let sunk = 0;
+    let sunk = [];
 
     let targetsHit = 0;
 
     let missilesLaunched = 0;
+
+    let needShowSunk = false;
+    let sunkType = null;
+    let sunkLocations = [];
+
+    let cheated = false;
 
     $(".battleship-container").on("click", (event) => {
         selectedShip = "battleship";
@@ -317,7 +323,7 @@ const UI = (function () {
         if (length == 0) return true;
         if (curr % 10 > 5 || curr > 60) return false;
         const cell = $("#" + curr);
-        if (ships.includes(curr)) return false;
+        if (Object.values(ships).some(x => x.includes(curr))) return false;
         if (horizontal)
             return checkEmpty(curr + 1, length - 1);
         else
@@ -326,9 +332,8 @@ const UI = (function () {
 
     function occupy(curr, length) {
         if (length == 0) return;
-        ships.push(curr);
+        ships[selectedShip].push(curr);
         const cell = $("#" + curr);
-        console.log(selectedShipLength - length);
         cell.css("background-image", "url(images/" + selectedShip + (selectedShipLength - length) + ".png)");
         cell.css("background-size", "cover");
         cell.css("background-color", "blue");
@@ -363,7 +368,11 @@ const UI = (function () {
 
     function reset() {
         numPlaced = 0;
-        ships = [];
+        ships = {
+            battleship: [],
+            submarine: [],
+            destroyer: []
+        }
         $(".cell").css("background-color", "blue");
         $(".cell").css("background-image", "none");
         $(".battleship-container").show();
@@ -407,6 +416,14 @@ const UI = (function () {
             $("#waiting-message").css("animation", "blinker 2s step-start infinite");
             $("#waiting-message").css("animation-delay", "0.75s");
         }
+        $(document).on("keypress", function (event) {
+            if (event.keyCode == 32) {
+                if (opponent && !cheated) {
+                    Socket.cheat(opponent);
+                    cheated = true;
+                }
+            }
+        });
         $("#opponent-panel").show();
     }
 
@@ -451,8 +468,7 @@ const UI = (function () {
         const id = parseInt(event.target.id) - 900;
         if (myTurn && !shots.includes(id)) {
             missilesLaunched++;
-            console.log("missles", missilesLaunched);
-            Socket.shoot(parseInt(event.target.id) - 900);
+            Socket.shoot(opponent, parseInt(event.target.id) - 900);
             myTurn = false;
             $("#waiting-message").text("Waiting for opponent...");
             $("#waiting-message").css("color", "red");
@@ -498,7 +514,6 @@ const UI = (function () {
     }
 
     function endGame(win) {
-        opponent = null;
         $("#waiting-message").text("");
         $("#waiting-message").css("animation", "none");
         if (win) {
@@ -523,45 +538,110 @@ const UI = (function () {
         $("#waiting-message").text("Your turn");
         $("#waiting-message").css("color", "green");
         $("#waiting-message").css("animation", "none");
-        if (ships.includes(parseInt(id))) {
-            cell.css("background-color", "red");
-            cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
-            sunk++;
-            if (sunk == 9) {
-                endGame(false);
-                return "defeat";
+
+        for (const [key, value] of Object.entries(ships)) {
+            if (value.includes(parseInt(id))) {
+                cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
+                sunk.push(id);
+                cell.css("background-color", "red");
+                if (value.every(x => sunk.includes(x))) {
+                    Socket.sunk(opponent, key, value);
+                }
+                if (sunk.length == 9) {
+                    endGame(false);
+                    Socket.result(opponent, id, "defeat");
+                    return;
+                }
+                Socket.result(opponent, id, "hit");
+                return;
             }
-            return "hit";
         }
-        else {
-            cell.css("background-color", "lightblue");
-            cell.append("<iframe src=\"https://giphy.com/embed/YOk7USZ9k8yF4R0yn3\" width=\"100%\"height=\"100%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
-            return "miss";
-        }
+
+        cell.css("background-color", "lightblue");
+        cell.append("<iframe src=\"https://giphy.com/embed/YOk7USZ9k8yF4R0yn3\" width=\"100%\"height=\"100%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
+        Socket.result(opponent, id, "miss");
+    }
+
+    function shootMissile(id, state) {
+        $('#svg').show();
+        $('#missile').css('animation', 'none');
+        $('#missile').off();
+        const cell = $("#9" + id);
+        const dispH = cell.position().left - $('#missile').position().left;
+        const dispV = cell.position().top - $('#missile').position().top;
+
+        Keyframes.define({
+            name: 'missile-animation',
+            from: {
+                transform: 'translate(' + (dispH - 1000) + 'px,' + (dispV + 1000) + 'px)'
+            },
+            to: {
+                transform: 'translate(' + dispH + 'px,' + dispV + 'px)'
+            }
+        });
+
+        $('#missile').css('animation', 'missile-animation');
+        $('#missile').css('animation-timing-function', 'linear');
+        $('#missile').css('animation-duration', '1.5s');
+        $('#missile').on('animationend', () => {
+            $('#svg').hide();
+            updateOpponentBoard(id, state);
+        });
     }
 
     function updateOpponentBoard(id, state) {
         const cell = $("#9" + id);
         if (state == "defeat") {
             targetsHit++;
-            cell.css("background-color", "red");
             cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
             $("#result-message").text("Hit!");
+            cell.css("background-color", "red");
+            sink();
             endGame(true);
         }
         else if (state == "hit") {
             targetsHit++;
-            cell.css("background-color", "red");
             cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
             $("#result-message").text("Hit!");
+            cell.css("background-color", "red");
+            if (needShowSunk) {
+                sink();
+                needShowSunk = false;
+            }
         }
         else {
-            cell.css("background-color", "lightblue");
             cell.append("<iframe src=\"https://giphy.com/embed/YOk7USZ9k8yF4R0yn3\" width=\"100%\"height=\"100%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
             $("#result-message").text("miss...");
+            cell.css("background-color", "lightblue");
         }
+
     }
 
-    return { getUserDisplay, startPreparation, processReady, startGame, checkDisconnection, updateMyBoard, updateOpponentBoard };
+    function sink() {
+        let curr = 0;
+        sunkLocations.forEach(id => {
+            const cell = $("#9" + id);
+            cell.css("background-image", "url(images/" + sunkType + curr + ".png)");
+            cell.css("background-size", "cover");
+            if (sunkLocations[1] - sunkLocations[0] == 1) {
+                cell.css("transform", "rotate(-90deg)");
+            }
+            curr++;
+        })
+    }
+
+    function showSunk(type, locations) {
+        sunkType = type;
+        sunkLocations = locations;
+        needShowSunk = true;
+    }
+
+    function showCheat() {
+        Object.entries(ships).forEach(([key, value]) => {
+            Socket.sunk(opponent, key, value);
+        });
+    }
+
+    return { getUserDisplay, startPreparation, processReady, startGame, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, showSunk, showCheat };
 
 })();

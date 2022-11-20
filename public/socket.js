@@ -46,16 +46,30 @@ const Socket = (function () {
         socket.on("target", (json) => {
             const { username, id } = JSON.parse(json);
 
-            if ($('#user-panel .user-name').text() != username) {
-                const state = UI.updateMyBoard(id);
-                socket.emit("result", JSON.stringify({ username, id, state }));
+            if ($('#user-panel .user-name').text() == username) {
+                UI.updateMyBoard(id);
             }
         });
+
+        socket.on("post sunk", (json) => {
+            const { username, type, locations } = JSON.parse(json);
+            if ($('#user-panel .user-name').text() == username) {
+                UI.showSunk(type, locations);
+            }
+        });
+
+        socket.on("post cheat", (username) => {
+            if ($('#user-panel .user-name').text() == username) {
+                UI.showCheat();
+            }
+        });
+
 
         socket.on("post result", (json) => {
             const { username, id, state } = JSON.parse(json);
             if ($('#user-panel .user-name').text() == username) {
-                UI.updateOpponentBoard(id, state);
+                console.log(state);
+                UI.shootMissile(id, state);
             }
         });
 
@@ -105,8 +119,21 @@ const Socket = (function () {
 
     };
 
-    const shoot = function (id) {
-        socket.emit("shoot", id);
+    const shoot = function (username, id) {
+        socket.emit("shoot", JSON.stringify({ username, id }));
+    }
+
+    const result = function (username, id, state) {
+        console.log("emitting", state);
+        socket.emit("result", JSON.stringify({ username, id, state }));
+    }
+
+    const sunk = function (username, type, locations) {
+        socket.emit("sunk", JSON.stringify({ username, type, locations }));
+    }
+
+    const cheat = function (username) {
+        socket.emit("cheat", username);
     }
 
     // This function disconnects the socket from the server
@@ -140,5 +167,5 @@ const Socket = (function () {
         socket.emit("insert", accuracy);
     }
 
-    return { getSocket, connect, shoot, disconnect, invite, accept, reject, ready, ranking, insert };
+    return { getSocket, connect, shoot, result, sunk, cheat, disconnect, invite, accept, reject, ready, ranking, insert };
 })();
