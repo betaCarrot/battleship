@@ -58,12 +58,19 @@ const Socket = (function () {
             }
         });
 
+        socket.on("post cheat sunk", (json) => {
+            const { username, type, locations } = JSON.parse(json);
+            if (Authentication.getUser().username == username) {
+                UI.forceShowSunk(type, locations);
+            }
+        });
+
         socket.on("post cheat", (username) => {
+            console.log(username);
             if (Authentication.getUser().username == username) {
                 UI.showCheat();
             }
         });
-
 
         socket.on("post result", (json) => {
             const { username, id, state } = JSON.parse(json);
@@ -131,6 +138,10 @@ const Socket = (function () {
         socket.emit("sunk", JSON.stringify({ username, type, locations }));
     }
 
+    const cheatSunk = function (username, type, locations) {
+        socket.emit("cheat sunk", JSON.stringify({ username, type, locations }));
+    }
+
     const cheat = function (username) {
         socket.emit("cheat", username);
     }
@@ -166,5 +177,5 @@ const Socket = (function () {
         socket.emit("insert", accuracy);
     }
 
-    return { getSocket, connect, shoot, result, sunk, cheat, disconnect, invite, accept, reject, ready, ranking, insert };
+    return { getSocket, connect, shoot, result, sunk, cheatSunk, cheat, disconnect, invite, accept, reject, ready, ranking, insert };
 })();

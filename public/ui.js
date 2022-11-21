@@ -175,12 +175,16 @@ const OnlineUsersPanel = (function () {
     // This function removes a user from the panel
     const removeUser = function (user) {
         const onlineUsersArea = $('#online-users-area');
+        const invitationUsersArea = $('#invitation-users-area');
 
         // Find the user
         const userDiv = onlineUsersArea.find('#username-' + user.username);
 
         // Remove the user
         if (userDiv.length > 0) userDiv.remove();
+
+        const invitationDiv = invitationUsersArea.find('#username-' + user.username);
+        if (invitationDiv.length > 0) invitationDiv.remove();
     };
 
     const processInvite = function (user) {
@@ -194,6 +198,8 @@ const OnlineUsersPanel = (function () {
             Socket.accept(user.username);
         });
         $('#invitation-users-area').on('click', '#reject-' + user.username, () => {
+            const invitationDiv = invitationUsersArea.find('#username-' + user.username);
+            if (invitationDiv.length > 0) invitationDiv.remove();
             Socket.reject(user.username);
         });
     }
@@ -397,13 +403,13 @@ const UI = (function () {
     function ready() {
         $("#ship-container").hide();
         $("#control-container").hide();
+        $("#waiting-message").text("Waiting for opponent...");
         $("#waiting-message").show();
         readied = true;
         if (opponentReadied) {
             inGame = true;
             startGame();
         }
-        $("#waiting-message").text("Waiting for opponent...");
         Socket.ready(opponent);
     }
 
@@ -461,6 +467,7 @@ const UI = (function () {
         $(document).on("keypress", function (event) {
             if (event.keyCode == 32) {
                 if (opponent && !cheated) {
+                    console.log("cheating");
                     Socket.cheat(opponent);
                     cheated = true;
                 }
@@ -662,6 +669,19 @@ const UI = (function () {
         })
     }
 
+    function forceShowSunk(type, locations) {
+        let curr = 0;
+        locations.forEach(id => {
+            const cell = $("#9" + id);
+            cell.css("background-image", "url(images/" + type + curr + ".png)");
+            cell.css("background-size", "cover");
+            if (locations[1] - locations[0] == 1) {
+                cell.css("transform", "rotate(-90deg)");
+            }
+            curr++;
+        })
+    }
+
     function showSunk(type, locations) {
         sunkType = type;
         sunkLocations = locations;
@@ -674,11 +694,13 @@ const UI = (function () {
     }
 
     function showCheat() {
+        console.log("showing cheat")
         Object.entries(ships).forEach(([key, value]) => {
-            Socket.sunk(opponent, key, value);
+            console.log("sinking", opponent, key);
+            Socket.cheatSunk(opponent, key, value);
         });
     }
 
-    return { getUserDisplay, startPreparation, postOpponent, processReady, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, showSunk, showCheat };
+    return { getUserDisplay, startPreparation, postOpponent, processReady, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, forceShowSunk, showSunk, showCheat };
 
 })();
