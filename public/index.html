@@ -238,6 +238,10 @@
         <div id="main-panel" class="row">
 
             <div id="my-panel" class="col">
+                <div class="field-content row shadow" id="my-info">
+                    <span class="my-avatar">🐹</span>
+                    <span class="my-name">a</span>
+                </div>
                 <div class="row">
                     <div class="board">
                         <div class="marker"></div>
@@ -306,6 +310,10 @@
             </div>
 
             <div id="opponent-panel" class="col">
+                <div class="field-content row shadow" id="opponent-info">
+                    <span class="opponent-avatar">🐹</span>
+                    <span class="opponent-name">a</span>
+                </div>
                 <div class="row">
                     <div class="board">
                         <div class="marker"></div>
@@ -352,9 +360,15 @@
     </div>
 
     <div id="pairup-overlay" class="overlay row">
-        <div id="online-users-panel" class="col">
-            <div id="online-users-title" class="caption col">Online Users</div>
-            <div id="online-users-area" class="col"></div>
+        <div class="content shadow row">
+            <div id="online-users-panel" class="col">
+                <div id="online-users-title" class="caption col">Online Users</div>
+                <div id="online-users-area" class="col"></div>
+            </div>
+            <div id="invitation-users-panel" class="col">
+                <div id="invitation-users-title" class="caption col">Invitations</div>
+                <div id="invitation-users-area" class="col"></div>
+            </div>
         </div>
     </div>
 

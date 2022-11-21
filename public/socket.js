@@ -46,20 +46,20 @@ const Socket = (function () {
         socket.on("target", (json) => {
             const { username, id } = JSON.parse(json);
 
-            if ($('#user-panel .user-name').text() == username) {
+            if (Authentication.getUser().username == username) {
                 UI.updateMyBoard(id);
             }
         });
 
         socket.on("post sunk", (json) => {
             const { username, type, locations } = JSON.parse(json);
-            if ($('#user-panel .user-name').text() == username) {
+            if (Authentication.getUser().username == username) {
                 UI.showSunk(type, locations);
             }
         });
 
         socket.on("post cheat", (username) => {
-            if ($('#user-panel .user-name').text() == username) {
+            if (Authentication.getUser().username == username) {
                 UI.showCheat();
             }
         });
@@ -67,47 +67,47 @@ const Socket = (function () {
 
         socket.on("post result", (json) => {
             const { username, id, state } = JSON.parse(json);
-            if ($('#user-panel .user-name').text() == username) {
-                console.log(state);
+            if (Authentication.getUser().username == username) {
                 UI.shootMissile(id, state);
             }
         });
 
         socket.on("post invite", (json) => {
-            const { username, target } = JSON.parse(json);
-            if ($('#user-panel .user-name').text() == target) {
-                OnlineUsersPanel.processInvite(username);
+            const { user, target } = JSON.parse(json);
+            if (Authentication.getUser().username == target) {
+                OnlineUsersPanel.processInvite(user);
             }
         });
 
         socket.on("post accept", (json) => {
-            const { username, target } = JSON.parse(json);
-            if ($('#user-panel .user-name').text() == target) {
+            const { user, target } = JSON.parse(json);
+            if (Authentication.getUser().username == target) {
                 OnlineUsersPanel.hide();
-                UI.startPreparation(username, true);
+                UI.postOpponent(user);
+                UI.startPreparation(user.username, true);
             }
             else {
-                OnlineUsersPanel.setInGame(username);
+                OnlineUsersPanel.setInGame(user.username);
                 OnlineUsersPanel.setInGame(target);
             }
         });
 
         socket.on("post reject", (json) => {
             const { username, target } = JSON.parse(json);
-            if ($('#user-panel .user-name').text() == target) {
+            if (Authentication.getUser().username == target) {
                 OnlineUsersPanel.processReject(username);
             }
         });
 
         socket.on("game unavailable", (username) => {
-            if ($('#user-panel .user-name').text() == username) {
+            if (Authentication.getUser().username == username) {
                 alert("This game is no longer available");
                 window.location.reload();
             }
         });
 
         socket.on("post ready", (target) => {
-            if ($('#user-panel .user-name').text() == target) {
+            if (Authentication.getUser().username == target) {
                 UI.processReady();
             }
         });
@@ -124,7 +124,6 @@ const Socket = (function () {
     }
 
     const result = function (username, id, state) {
-        console.log("emitting", state);
         socket.emit("result", JSON.stringify({ username, id, state }));
     }
 

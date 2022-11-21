@@ -202,13 +202,11 @@ io.on("connection", (socket) => {
     });
 
     socket.on("result", (res) => {
-        console.log(res);
         io.emit("post result", res);
     });
 
     socket.on("invite", (target) => {
-        const { username } = socket.request.session.user;
-        io.emit("post invite", JSON.stringify({ username, target: target }));
+        io.emit("post invite", JSON.stringify({ user: socket.request.session.user, target: target }));
     });
 
     socket.on("accept", (target) => {
@@ -216,7 +214,7 @@ io.on("connection", (socket) => {
         if (onlineUsers[username] && onlineUsers[target] && !onlineUsers[username].inGame && !onlineUsers[target].inGame) {
             onlineUsers[username].inGame = true;
             onlineUsers[target].inGame = true;
-            io.emit("post accept", JSON.stringify({ username, target }));
+            io.emit("post accept", JSON.stringify({ user: socket.request.session.user, target }));
         }
         else {
             io.emit("game unavailable", username);

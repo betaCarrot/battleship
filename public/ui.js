@@ -183,14 +183,19 @@ const OnlineUsersPanel = (function () {
         if (userDiv.length > 0) userDiv.remove();
     };
 
-    const processInvite = function (username) {
-        if (confirm(username + " is inviting you to a game. Would you like to accept?")) {
-            UI.startPreparation(username, false);
-            Socket.accept(username);
-        }
-        else {
-            Socket.reject(username);
-        }
+    const processInvite = function (user) {
+        const invitationUsersArea = $('#invitation-users-area');
+        invitationUsersArea.append(
+            $('<div id=\'username-' + user.username + '\' class=\'row\'></div>')
+                .append(UI.getUserDisplay(user)).append($('<button class= \'invitation\' id=\'accept-' + user.username + '\'>&#x2705;</button>')).append($('<button class= \'invitation\' id=\'reject-' + user.username + '\'>&#x274C;</button>')));
+        $('#invitation-users-area').on('click', '#accept-' + user.username, () => {
+            UI.startPreparation(user.username, false);
+            UI.postOpponent(user);
+            Socket.accept(user.username);
+        });
+        $('#invitation-users-area').on('click', '#reject-' + user.username, () => {
+            Socket.reject(user.username);
+        });
     }
 
     const processReject = function (username) {
@@ -228,7 +233,7 @@ const RankingPanel = (function () {
         // Add the user one-by-one
         for (let i = 0; i < rankedUsers.length; i++) {
             const { username, accuracy } = rankedUsers[i];
-            if ($('#user-panel .user-name').text() == username) {
+            if (Authentication.getUser().username == username) {
                 RankingTable.append('<tr class=\'active-row\'><td>' + (i + 1) + '</td><td>' + username + '</td><td>' + accuracy + '%</td>')
             }
             else {
@@ -289,8 +294,15 @@ const UI = (function () {
     let needShowSunk = false;
     let sunkType = null;
     let sunkLocations = [];
+    let updated = false;
 
     let cheated = false;
+
+    const sounds = {
+        missile: new Audio("audios/missile.wav"),
+        explosion: new Audio("audios/explosion.wav"),
+        water: new Audio("audios/water.wav")
+    };
 
     $(".battleship-container").on("click", (event) => {
         selectedShip = "battleship";
@@ -391,6 +403,7 @@ const UI = (function () {
             inGame = true;
             startGame();
         }
+        $("#waiting-message").text("Waiting for opponent...");
         Socket.ready(opponent);
     }
 
@@ -406,6 +419,35 @@ const UI = (function () {
     }
 
     function startGame() {
+        $(".cell-opponent").on("click", (event) => {
+            const id = parseInt(event.target.id) - 900;
+            if (myTurn && !shots.includes(id)) {
+                updated = false;
+                missilesLaunched++;
+                Socket.shoot(opponent, parseInt(event.target.id) - 900);
+                myTurn = false;
+                $("#waiting-message").text("Waiting for opponent...");
+                $("#waiting-message").css("color", "red");
+                $("#waiting-message").css("animation", "blinker 2s step-start infinite");
+                $("#waiting-message").css("animation-delay", "0.75s");
+                shots.push(id);
+            }
+        });
+
+        $(".cell-opponent").on({
+            mouseenter: function (event) {
+                const id = parseInt(event.target.id) - 900;
+                if (myTurn && !shots.includes(id)) {
+                    $(event.target).css("background-color", "white");
+                }
+            },
+            mouseleave: function (event) {
+                const id = parseInt(event.target.id) - 900;
+                if (myTurn && !shots.includes(id)) {
+                    $(event.target).css("background-color", "blue");
+                }
+            }
+        });
         if (myTurn) {
             $("#waiting-message").text("Your turn");
             $("#waiting-message").css("color", "green");
@@ -424,74 +466,7 @@ const UI = (function () {
                 }
             }
         });
-        $("#opponent-panel").show();
     }
-
-    $(".cell").on("click", (event) => {
-        if (selectedShip) {
-            const id = parseInt(event.target.id);
-            if (checkEmpty(id, selectedShipLength)) {
-                occupy(id, selectedShipLength);
-                numPlaced++;
-                $('.' + selectedShip + '-container').css("border", "none");
-                $('.' + selectedShip + '-container').hide();
-                selectedShip = null;
-                horizontal = true;
-                if (numPlaced == 3) {
-                    $("#rotate-button").hide();
-                    $("#ready-button").show();
-                }
-            }
-        }
-    })
-
-    $(".cell").on({
-        mouseenter: function (event) {
-            if (selectedShip) {
-                const id = parseInt(event.target.id);
-                if (checkEmpty(id, selectedShipLength)) {
-                    indicate(id, selectedShipLength);
-                }
-            }
-        },
-        mouseleave: function (event) {
-            if (selectedShip) {
-                const id = parseInt(event.target.id);
-                if (checkEmpty(id, selectedShipLength)) {
-                    unindicate(id, selectedShipLength);
-                }
-            }
-        }
-    });
-
-    $(".cell-opponent").on("click", (event) => {
-        const id = parseInt(event.target.id) - 900;
-        if (myTurn && !shots.includes(id)) {
-            missilesLaunched++;
-            Socket.shoot(opponent, parseInt(event.target.id) - 900);
-            myTurn = false;
-            $("#waiting-message").text("Waiting for opponent...");
-            $("#waiting-message").css("color", "red");
-            $("#waiting-message").css("animation", "blinker 2s step-start infinite");
-            $("#waiting-message").css("animation-delay", "0.75s");
-            shots.push(id);
-        }
-    });
-
-    $(".cell-opponent").on({
-        mouseenter: function (event) {
-            const id = parseInt(event.target.id) - 900;
-            if (myTurn && !shots.includes(id)) {
-                $(event.target).css("background-color", "white");
-            }
-        },
-        mouseleave: function (event) {
-            const id = parseInt(event.target.id) - 900;
-            if (myTurn && !shots.includes(id)) {
-                $(event.target).css("background-color", "blue");
-            }
-        }
-    });
 
     $("#rotate-button").on("click", () => {
         horizontal = !horizontal;
@@ -501,19 +476,63 @@ const UI = (function () {
 
     $("#ready-button").on("click", ready);
 
+    function postOpponent(user) {
+        $('.my-avatar').html(Avatar.getCode(Authentication.getUser().avatar));
+        $('.my-name').text(Authentication.getUser().name);
+        $('.opponent-avatar').html(Avatar.getCode(user.avatar));
+        $('.opponent-name').text(user.name);
+    }
+
     function startPreparation(username, turn) {
+        $(".cell").on("click", (event) => {
+            if (selectedShip) {
+                const id = parseInt(event.target.id);
+                if (checkEmpty(id, selectedShipLength)) {
+                    occupy(id, selectedShipLength);
+                    numPlaced++;
+                    $('.' + selectedShip + '-container').css("border", "none");
+                    $('.' + selectedShip + '-container').hide();
+                    selectedShip = null;
+                    horizontal = true;
+                    if (numPlaced == 3) {
+                        $("#rotate-button").hide();
+                        $("#ready-button").show();
+                    }
+                }
+            }
+        })
+
+        $(".cell").on({
+            mouseenter: function (event) {
+                if (selectedShip) {
+                    const id = parseInt(event.target.id);
+                    if (checkEmpty(id, selectedShipLength)) {
+                        indicate(id, selectedShipLength);
+                    }
+                }
+            },
+            mouseleave: function (event) {
+                if (selectedShip) {
+                    const id = parseInt(event.target.id);
+                    if (checkEmpty(id, selectedShipLength)) {
+                        unindicate(id, selectedShipLength);
+                    }
+                }
+            }
+        });
         opponent = username;
         myTurn = turn;
     }
 
     function checkDisconnection(username) {
-        if (opponent && opponent == username) {
+        if (inGame && opponent && opponent == username) {
             alert("Opponent has disconnected");
             window.location.reload();
         }
     }
 
     function endGame(win) {
+        inGame = false;
         $("#waiting-message").text("");
         $("#waiting-message").css("animation", "none");
         if (win) {
@@ -583,6 +602,10 @@ const UI = (function () {
         $('#missile').css('animation', 'missile-animation');
         $('#missile').css('animation-timing-function', 'linear');
         $('#missile').css('animation-duration', '1.5s');
+        $('#missile').on('animationstart', () => {
+            sounds.missile.currentTime = 0.75;
+            sounds.missile.play();
+        });
         $('#missile').on('animationend', () => {
             $('#svg').hide();
             updateOpponentBoard(id, state);
@@ -594,14 +617,21 @@ const UI = (function () {
         if (state == "defeat") {
             targetsHit++;
             cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
+            sounds.missile.pause();
+            sounds.explosion.play();
             $("#result-message").text("Hit!");
             cell.css("background-color", "red");
-            sink();
+            if (needShowSunk) {
+                sink();
+                needShowSunk = false;
+            }
             endGame(true);
         }
         else if (state == "hit") {
             targetsHit++;
             cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
+            sounds.missile.pause();
+            sounds.explosion.play();
             $("#result-message").text("Hit!");
             cell.css("background-color", "red");
             if (needShowSunk) {
@@ -611,6 +641,8 @@ const UI = (function () {
         }
         else {
             cell.append("<iframe src=\"https://giphy.com/embed/YOk7USZ9k8yF4R0yn3\" width=\"100%\"height=\"100%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
+            sounds.missile.pause();
+            sounds.water.play();
             $("#result-message").text("miss...");
             cell.css("background-color", "lightblue");
         }
@@ -633,7 +665,12 @@ const UI = (function () {
     function showSunk(type, locations) {
         sunkType = type;
         sunkLocations = locations;
-        needShowSunk = true;
+        if (updated) {
+            sink();
+        }
+        else {
+            needShowSunk = true;
+        }
     }
 
     function showCheat() {
@@ -642,6 +679,6 @@ const UI = (function () {
         });
     }
 
-    return { getUserDisplay, startPreparation, processReady, startGame, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, showSunk, showCheat };
+    return { getUserDisplay, startPreparation, postOpponent, processReady, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, showSunk, showCheat };
 
 })();

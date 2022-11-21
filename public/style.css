@@ -145,6 +145,14 @@ body {
     cursor: pointer;
 }
 
+.invitation {
+    background-color: transparent;
+    border: none;
+    font-size: 100%;
+    padding: 1px 6px;
+    box-shadow: none;
+}
+
 /* Main panel */
 #main-panel {
     height: 100%;
@@ -167,6 +175,12 @@ body {
     height: 100%;
     background: var(--online-users-panel-background);
     padding: 0;
+}
+
+#my-info,
+#opponent-info {
+    margin: 0 auto;
+    width: 100px;
 }
 
 .board {
@@ -413,8 +427,8 @@ button.icon:active {
 
 /* Online users panel */
 #online-users-panel {
-    flex: 0 0 250px;
     height: 100%;
+    width: 100%;
     padding: 0;
     background: var(--online-users-panel-background);
 }
@@ -425,6 +439,13 @@ button.icon:active {
     align-items: flex-start;
     justify-content: start;
     overflow-y: auto;
+}
+
+#invitation-users-panel {
+    height: 100%;
+    width: 50%;
+    padding: 0;
+    background: var(--online-users-panel-background);
 }
 
 /* Signin overlay */
