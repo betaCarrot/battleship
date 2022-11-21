@@ -189,6 +189,7 @@ const OnlineUsersPanel = (function () {
             $('<div id=\'username-' + user.username + '\' class=\'row\'></div>')
                 .append(UI.getUserDisplay(user)).append($('<button class= \'invitation\' id=\'accept-' + user.username + '\'>&#x2705;</button>')).append($('<button class= \'invitation\' id=\'reject-' + user.username + '\'>&#x274C;</button>')));
         $('#invitation-users-area').on('click', '#accept-' + user.username, () => {
+            UI.startPreparation(user.username, false);
             UI.postOpponent(user);
             Socket.accept(user.username);
         });
@@ -232,7 +233,7 @@ const RankingPanel = (function () {
         // Add the user one-by-one
         for (let i = 0; i < rankedUsers.length; i++) {
             const { username, accuracy } = rankedUsers[i];
-            if ($('#user-panel .user-name').text() == username) {
+            if (Authentication.getUser().username == username) {
                 RankingTable.append('<tr class=\'active-row\'><td>' + (i + 1) + '</td><td>' + username + '</td><td>' + accuracy + '%</td>')
             }
             else {
@@ -402,6 +403,7 @@ const UI = (function () {
             inGame = true;
             startGame();
         }
+        $("#waiting-message").text("Waiting for opponent...");
         Socket.ready(opponent);
     }
 
@@ -417,6 +419,35 @@ const UI = (function () {
     }
 
     function startGame() {
+        $(".cell-opponent").on("click", (event) => {
+            const id = parseInt(event.target.id) - 900;
+            if (myTurn && !shots.includes(id)) {
+                updated = false;
+                missilesLaunched++;
+                Socket.shoot(opponent, parseInt(event.target.id) - 900);
+                myTurn = false;
+                $("#waiting-message").text("Waiting for opponent...");
+                $("#waiting-message").css("color", "red");
+                $("#waiting-message").css("animation", "blinker 2s step-start infinite");
+                $("#waiting-message").css("animation-delay", "0.75s");
+                shots.push(id);
+            }
+        });
+
+        $(".cell-opponent").on({
+            mouseenter: function (event) {
+                const id = parseInt(event.target.id) - 900;
+                if (myTurn && !shots.includes(id)) {
+                    $(event.target).css("background-color", "white");
+                }
+            },
+            mouseleave: function (event) {
+                const id = parseInt(event.target.id) - 900;
+                if (myTurn && !shots.includes(id)) {
+                    $(event.target).css("background-color", "blue");
+                }
+            }
+        });
         if (myTurn) {
             $("#waiting-message").text("Your turn");
             $("#waiting-message").css("color", "green");
@@ -437,73 +468,6 @@ const UI = (function () {
         });
     }
 
-    $(".cell").on("click", (event) => {
-        if (selectedShip) {
-            const id = parseInt(event.target.id);
-            if (checkEmpty(id, selectedShipLength)) {
-                occupy(id, selectedShipLength);
-                numPlaced++;
-                $('.' + selectedShip + '-container').css("border", "none");
-                $('.' + selectedShip + '-container').hide();
-                selectedShip = null;
-                horizontal = true;
-                if (numPlaced == 3) {
-                    $("#rotate-button").hide();
-                    $("#ready-button").show();
-                }
-            }
-        }
-    })
-
-    $(".cell").on({
-        mouseenter: function (event) {
-            if (selectedShip) {
-                const id = parseInt(event.target.id);
-                if (checkEmpty(id, selectedShipLength)) {
-                    indicate(id, selectedShipLength);
-                }
-            }
-        },
-        mouseleave: function (event) {
-            if (selectedShip) {
-                const id = parseInt(event.target.id);
-                if (checkEmpty(id, selectedShipLength)) {
-                    unindicate(id, selectedShipLength);
-                }
-            }
-        }
-    });
-
-    $(".cell-opponent").on("click", (event) => {
-        const id = parseInt(event.target.id) - 900;
-        if (myTurn && !shots.includes(id)) {
-            updated = false;
-            missilesLaunched++;
-            Socket.shoot(opponent, parseInt(event.target.id) - 900);
-            myTurn = false;
-            $("#waiting-message").text("Waiting for opponent...");
-            $("#waiting-message").css("color", "red");
-            $("#waiting-message").css("animation", "blinker 2s step-start infinite");
-            $("#waiting-message").css("animation-delay", "0.75s");
-            shots.push(id);
-        }
-    });
-
-    $(".cell-opponent").on({
-        mouseenter: function (event) {
-            const id = parseInt(event.target.id) - 900;
-            if (myTurn && !shots.includes(id)) {
-                $(event.target).css("background-color", "white");
-            }
-        },
-        mouseleave: function (event) {
-            const id = parseInt(event.target.id) - 900;
-            if (myTurn && !shots.includes(id)) {
-                $(event.target).css("background-color", "blue");
-            }
-        }
-    });
-
     $("#rotate-button").on("click", () => {
         horizontal = !horizontal;
     });
@@ -520,6 +484,42 @@ const UI = (function () {
     }
 
     function startPreparation(username, turn) {
+        $(".cell").on("click", (event) => {
+            if (selectedShip) {
+                const id = parseInt(event.target.id);
+                if (checkEmpty(id, selectedShipLength)) {
+                    occupy(id, selectedShipLength);
+                    numPlaced++;
+                    $('.' + selectedShip + '-container').css("border", "none");
+                    $('.' + selectedShip + '-container').hide();
+                    selectedShip = null;
+                    horizontal = true;
+                    if (numPlaced == 3) {
+                        $("#rotate-button").hide();
+                        $("#ready-button").show();
+                    }
+                }
+            }
+        })
+
+        $(".cell").on({
+            mouseenter: function (event) {
+                if (selectedShip) {
+                    const id = parseInt(event.target.id);
+                    if (checkEmpty(id, selectedShipLength)) {
+                        indicate(id, selectedShipLength);
+                    }
+                }
+            },
+            mouseleave: function (event) {
+                if (selectedShip) {
+                    const id = parseInt(event.target.id);
+                    if (checkEmpty(id, selectedShipLength)) {
+                        unindicate(id, selectedShipLength);
+                    }
+                }
+            }
+        });
         opponent = username;
         myTurn = turn;
     }
@@ -679,6 +679,6 @@ const UI = (function () {
         });
     }
 
-    return { getUserDisplay, startPreparation, postOpponent, processReady, startGame, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, showSunk, showCheat };
+    return { getUserDisplay, startPreparation, postOpponent, processReady, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, showSunk, showCheat };
 
 })();
