@@ -197,6 +197,10 @@ io.on("connection", (socket) => {
         io.emit("post sunk", json);
     });
 
+    socket.on("cheat sunk", (json) => {
+        io.emit("post cheat sunk", json);
+    });
+
     socket.on("cheat", (username) => {
         io.emit("post cheat", username);
     });
