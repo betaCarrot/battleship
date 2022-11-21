@@ -289,8 +289,15 @@ const UI = (function () {
     let needShowSunk = false;
     let sunkType = null;
     let sunkLocations = [];
+    let updated = false;
 
     let cheated = false;
+
+    const sounds = {
+        missile: new Audio("audios/missile.wav"),
+        explosion: new Audio("audios/explosion.wav"),
+        water: new Audio("audios/water.wav")
+    };
 
     $(".battleship-container").on("click", (event) => {
         selectedShip = "battleship";
@@ -467,6 +474,7 @@ const UI = (function () {
     $(".cell-opponent").on("click", (event) => {
         const id = parseInt(event.target.id) - 900;
         if (myTurn && !shots.includes(id)) {
+            updated = false;
             missilesLaunched++;
             Socket.shoot(opponent, parseInt(event.target.id) - 900);
             myTurn = false;
@@ -507,13 +515,14 @@ const UI = (function () {
     }
 
     function checkDisconnection(username) {
-        if (opponent && opponent == username) {
+        if (inGame && opponent && opponent == username) {
             alert("Opponent has disconnected");
             window.location.reload();
         }
     }
 
     function endGame(win) {
+        inGame = false;
         $("#waiting-message").text("");
         $("#waiting-message").css("animation", "none");
         if (win) {
@@ -583,6 +592,10 @@ const UI = (function () {
         $('#missile').css('animation', 'missile-animation');
         $('#missile').css('animation-timing-function', 'linear');
         $('#missile').css('animation-duration', '1.5s');
+        $('#missile').on('animationstart', () => {
+            sounds.missile.currentTime = 0.75;
+            sounds.missile.play();
+        });
         $('#missile').on('animationend', () => {
             $('#svg').hide();
             updateOpponentBoard(id, state);
@@ -594,14 +607,21 @@ const UI = (function () {
         if (state == "defeat") {
             targetsHit++;
             cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
+            sounds.missile.pause();
+            sounds.explosion.play();
             $("#result-message").text("Hit!");
             cell.css("background-color", "red");
-            sink();
+            if (needShowSunk) {
+                sink();
+                needShowSunk = false;
+            }
             endGame(true);
         }
         else if (state == "hit") {
             targetsHit++;
             cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
+            sounds.missile.pause();
+            sounds.explosion.play();
             $("#result-message").text("Hit!");
             cell.css("background-color", "red");
             if (needShowSunk) {
@@ -611,6 +631,8 @@ const UI = (function () {
         }
         else {
             cell.append("<iframe src=\"https://giphy.com/embed/YOk7USZ9k8yF4R0yn3\" width=\"100%\"height=\"100%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
+            sounds.missile.pause();
+            sounds.water.play();
             $("#result-message").text("miss...");
             cell.css("background-color", "lightblue");
         }
@@ -633,7 +655,12 @@ const UI = (function () {
     function showSunk(type, locations) {
         sunkType = type;
         sunkLocations = locations;
-        needShowSunk = true;
+        if (updated) {
+            sink();
+        }
+        else {
+            needShowSunk = true;
+        }
     }
 
     function showCheat() {

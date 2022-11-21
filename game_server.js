@@ -202,7 +202,6 @@ io.on("connection", (socket) => {
     });
 
     socket.on("result", (res) => {
-        console.log(res);
         io.emit("post result", res);
     });
 

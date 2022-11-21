@@ -68,7 +68,6 @@ const Socket = (function () {
         socket.on("post result", (json) => {
             const { username, id, state } = JSON.parse(json);
             if ($('#user-panel .user-name').text() == username) {
-                console.log(state);
                 UI.shootMissile(id, state);
             }
         });
@@ -124,7 +123,6 @@ const Socket = (function () {
     }
 
     const result = function (username, id, state) {
-        console.log("emitting", state);
         socket.emit("result", JSON.stringify({ username, id, state }));
     }
 
