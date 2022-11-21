@@ -183,14 +183,18 @@ const OnlineUsersPanel = (function () {
         if (userDiv.length > 0) userDiv.remove();
     };
 
-    const processInvite = function (username) {
-        if (confirm(username + " is inviting you to a game. Would you like to accept?")) {
-            UI.startPreparation(username, false);
-            Socket.accept(username);
-        }
-        else {
-            Socket.reject(username);
-        }
+    const processInvite = function (user) {
+        const invitationUsersArea = $('#invitation-users-area');
+        invitationUsersArea.append(
+            $('<div id=\'username-' + user.username + '\' class=\'row\'></div>')
+                .append(UI.getUserDisplay(user)).append($('<button class= \'invitation\' id=\'accept-' + user.username + '\'>&#x2705;</button>')).append($('<button class= \'invitation\' id=\'reject-' + user.username + '\'>&#x274C;</button>')));
+        $('#invitation-users-area').on('click', '#accept-' + user.username, () => {
+            UI.postOpponent(user);
+            Socket.accept(user.username);
+        });
+        $('#invitation-users-area').on('click', '#reject-' + user.username, () => {
+            Socket.reject(user.username);
+        });
     }
 
     const processReject = function (username) {
@@ -431,7 +435,6 @@ const UI = (function () {
                 }
             }
         });
-        $("#opponent-panel").show();
     }
 
     $(".cell").on("click", (event) => {
@@ -508,6 +511,13 @@ const UI = (function () {
     $("#reset-button").on("click", reset);
 
     $("#ready-button").on("click", ready);
+
+    function postOpponent(user) {
+        $('.my-avatar').html(Avatar.getCode(Authentication.getUser().avatar));
+        $('.my-name').text(Authentication.getUser().name);
+        $('.opponent-avatar').html(Avatar.getCode(user.avatar));
+        $('.opponent-name').text(user.name);
+    }
 
     function startPreparation(username, turn) {
         opponent = username;
@@ -669,6 +679,6 @@ const UI = (function () {
         });
     }
 
-    return { getUserDisplay, startPreparation, processReady, startGame, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, showSunk, showCheat };
+    return { getUserDisplay, startPreparation, postOpponent, processReady, startGame, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, showSunk, showCheat };
 
 })();

@@ -73,20 +73,21 @@ const Socket = (function () {
         });
 
         socket.on("post invite", (json) => {
-            const { username, target } = JSON.parse(json);
+            const { user, target } = JSON.parse(json);
             if ($('#user-panel .user-name').text() == target) {
-                OnlineUsersPanel.processInvite(username);
+                OnlineUsersPanel.processInvite(user);
             }
         });
 
         socket.on("post accept", (json) => {
-            const { username, target } = JSON.parse(json);
+            const { user, target } = JSON.parse(json);
             if ($('#user-panel .user-name').text() == target) {
                 OnlineUsersPanel.hide();
+                UI.postOpponent(user);
                 UI.startPreparation(username, true);
             }
             else {
-                OnlineUsersPanel.setInGame(username);
+                OnlineUsersPanel.setInGame(user.username);
                 OnlineUsersPanel.setInGame(target);
             }
         });
