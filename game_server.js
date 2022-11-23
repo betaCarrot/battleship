@@ -259,6 +259,6 @@ io.use((socket, next) => {
         {}, next);
 });
 
-httpServer.listen(8000, () => {
+httpServer.listen(process.env.PORT || 8000, () => {
     console.log("The game server has started...");
 });
