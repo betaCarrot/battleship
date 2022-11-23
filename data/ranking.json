@@ -1,0 +1,22 @@
+[
+ {
+  "username": "a",
+  "accuracy": 100
+ },
+ {
+  "username": "c",
+  "accuracy": 100
+ },
+ {
+  "username": "b",
+  "accuracy": 100
+ },
+ {
+  "username": "tony",
+  "accuracy": 83
+ },
+ {
+  "username": "lee",
+  "accuracy": 20
+ }
+]
