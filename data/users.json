@@ -1,0 +1,37 @@
+{
+ "tony": {
+  "avatar": "Owl",
+  "name": "Tony Lee",
+  "password": "$2b$10$Yxb2fSgA5RFn9Oz9TxjLLuve/GiPXCs2DWVFhyFDr4qz39qglwp8e"
+ },
+ "may": {
+  "avatar": "Rabbit",
+  "name": "May Wong",
+  "password": "$2b$10$gLc3Ri9W6P650EKKbexw6uvirV8Bar7gmvAtMcoMiPiR3rsY50GVu"
+ },
+ "a": {
+  "avatar": "Hamster",
+  "name": "a",
+  "password": "$2b$10$Jb2dt3ndlAJ3OJpgBZ0Giux3bqqRzSS26pcSp9jTk4xtl7qtKA06y"
+ },
+ "b": {
+  "avatar": "Hamster",
+  "name": "b",
+  "password": "$2b$10$ckboMFtDojisFOD/ZuEHSOIkIueOCuHjrK6LV7pUOm6Og5K4yzt/W"
+ },
+ "c": {
+  "avatar": "Rabbit",
+  "name": "c",
+  "password": "$2b$10$OYO8GJRWhxINkQwpXHRbvOJml0eEIyHlr2SKJZGuA3efm21o0L3xC"
+ },
+ "aa": {
+  "avatar": "Turkey",
+  "name": "haha",
+  "password": "$2b$10$/7ADhuQpdIPGYOJhIOYHweQdBr8AFnzWOptPltKVou8R15cwrOKaC"
+ },
+ "bb": {
+  "avatar": "Butterfly",
+  "name": "hehe",
+  "password": "$2b$10$raixWsd8UzpVjQ1y3elCfuU2mUxN9ABA044W6J4LScUyfxJfFMnCW"
+ }
+}
