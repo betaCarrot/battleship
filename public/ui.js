@@ -4,8 +4,17 @@ const SignInForm = (function () {
         // Populate the avatar selection
         Avatar.populate($('#register-avatar'));
 
+        $("#description-button").on("click", () => {
+            $("#rules-overlay").show();
+        })
+
+        $("#instruct-button").on("click", () => {
+            $("#rules-overlay").hide();
+        })
+
         // Hide it
         $('#signin-overlay').hide();
+        $('#rules-overlay').hide();
 
         // Submit event for the signin form
         $('#signin-form').on('submit', (e) => {
@@ -86,6 +95,16 @@ const UserPanel = (function () {
 
         // Click event for the signout button
         $('#signout-button').on('click', () => {
+            // Send a signout request
+            Authentication.signout(() => {
+                Socket.disconnect();
+                window.location.reload();
+                hide();
+                SignInForm.show();
+            });
+        });
+
+        $('#pairup-button').on('click', () => {
             // Send a signout request
             Authentication.signout(() => {
                 Socket.disconnect();
@@ -307,7 +326,8 @@ const UI = (function () {
     const sounds = {
         missile: new Audio("audios/missile.wav"),
         explosion: new Audio("audios/explosion.wav"),
-        water: new Audio("audios/water.wav")
+        water: new Audio("audios/water.wav"),
+        sat: new Audio("audios/sat.wav")
     };
 
     $(".battleship-container").on("click", (event) => {
@@ -360,22 +380,25 @@ const UI = (function () {
             occupy(curr + 1, length - 1);
         }
         else {
+            cell.css("transform", "rotate(0deg)");
             occupy(curr + 10, length - 1);
         }
     }
 
-    function indicate(curr, length) {
+    function indicate(curr, length, color) {
         if (length == 0) return;
+        if (curr % 10 > 5 || curr > 60) return;
         const cell = $("#" + curr);
-        cell.css("background-color", "#FED8B1");
+        cell.css("background-color", color);
         if (horizontal)
-            indicate(curr + 1, length - 1);
+            indicate(curr + 1, length - 1, color);
         else
-            indicate(curr + 10, length - 1);
+            indicate(curr + 10, length - 1, color);
     }
 
     function unindicate(curr, length) {
         if (length == 0) return;
+        if (curr % 10 > 5 || curr > 60) return;
         const cell = $("#" + curr);
         cell.css("background-color", "blue");
         if (horizontal)
@@ -386,6 +409,7 @@ const UI = (function () {
 
     function reset() {
         numPlaced = 0;
+        horizontal = false;
         ships = {
             battleship: [],
             submarine: [],
@@ -403,6 +427,8 @@ const UI = (function () {
     function ready() {
         $("#ship-container").hide();
         $("#control-container").hide();
+        $("#my-info").css("animation", "none");
+        $("#opponent-info").css("animation", "blinker 2s step-start infinite");
         $("#waiting-message").text("Waiting for opponent...");
         $("#waiting-message").show();
         readied = true;
@@ -434,8 +460,8 @@ const UI = (function () {
                 myTurn = false;
                 $("#waiting-message").text("Waiting for opponent...");
                 $("#waiting-message").css("color", "red");
-                $("#waiting-message").css("animation", "blinker 2s step-start infinite");
-                $("#waiting-message").css("animation-delay", "0.75s");
+                $("#my-info").css("animation", "none");
+                $("#opponent-info").css("animation", "blinker 2s step-start infinite");
                 shots.push(id);
             }
         });
@@ -457,19 +483,49 @@ const UI = (function () {
         if (myTurn) {
             $("#waiting-message").text("Your turn");
             $("#waiting-message").css("color", "green");
-            $("#waiting-message").css("animation", "none");
+            $("#my-info").css("animation", "blinker 2s step-start infinite");
+            $("#opponent-info").css("animation", "none");
         } else {
             $("#waiting-message").text("Waiting for opponent...");
             $("#waiting-message").css("color", "red");
-            $("#waiting-message").css("animation", "blinker 2s step-start infinite");
-            $("#waiting-message").css("animation-delay", "0.75s");
+            $("#my-info").css("animation", "none");
+            $("#opponent-info").css("animation", "blinker 2s step-start infinite");
         }
         $(document).on("keypress", function (event) {
+            event.preventDefault();
             if (event.keyCode == 32) {
                 if (opponent && !cheated) {
-                    console.log("cheating");
-                    Socket.cheat(opponent);
-                    cheated = true;
+                    $('#svg2').show();
+                    $('#sat').css('animation', 'none');
+                    $('#sat').off();
+                    const cellS = $("#951");
+                    const cellE = $("#915");
+                    const dispHS = (cellS.position().left - $('#sat').position().left)
+                    const dispVS = (cellS.position().top - $('#sat').position().top);
+                    const dispHE = (cellE.position().left - $('#sat').position().left);
+                    const dispVE = (cellE.position().top - $('#sat').position().top);
+                    Keyframes.define({
+                        name: 'sat-animation',
+                        from: {
+                            transform: 'translate(' + dispHS + 'px,' + dispVS + 'px)'
+                        },
+                        to: {
+                            transform: 'translate(' + dispHE + 'px,' + dispVE + 'px)'
+                        }
+                    });
+                    $('#sat').css('animation', 'sat-animation');
+                    $('#sat').css('animation-timing-function', 'linear');
+                    $('#sat').css('animation-duration', '1.5s');
+                    $('#sat').on('animationstart', () => {
+                        sounds.sat.currentTime = 3.0;
+                        sounds.sat.play();
+                    });
+                    $('#sat').on('animationend', () => {
+                        $('#svg2').hide();
+                        sounds.sat.pause();
+                        Socket.cheat(opponent);
+                        cheated = true;
+                    });
                 }
             }
         });
@@ -491,6 +547,14 @@ const UI = (function () {
     }
 
     function startPreparation(username, turn) {
+        sounds.missile.play();
+        sounds.missile.pause();
+        sounds.explosion.play();
+        sounds.explosion.pause();
+        sounds.water.play();
+        sounds.water.pause();
+        sounds.sat.play();
+        sounds.sat.pause();
         $(".cell").on("click", (event) => {
             if (selectedShip) {
                 const id = parseInt(event.target.id);
@@ -514,16 +578,17 @@ const UI = (function () {
                 if (selectedShip) {
                     const id = parseInt(event.target.id);
                     if (checkEmpty(id, selectedShipLength)) {
-                        indicate(id, selectedShipLength);
+                        indicate(id, selectedShipLength, 'lightgreen');
+                    }
+                    else {
+                        indicate(id, selectedShipLength, 'red');
                     }
                 }
             },
             mouseleave: function (event) {
                 if (selectedShip) {
                     const id = parseInt(event.target.id);
-                    if (checkEmpty(id, selectedShipLength)) {
-                        unindicate(id, selectedShipLength);
-                    }
+                    unindicate(id, selectedShipLength);
                 }
             }
         });
@@ -541,7 +606,8 @@ const UI = (function () {
     function endGame(win) {
         inGame = false;
         $("#waiting-message").text("");
-        $("#waiting-message").css("animation", "none");
+        $("#my-info").css("animation", "none");
+        $("#opponent-info").css("animation", "none");
         if (win) {
             $("#game-result").text("YOU WON!");
             $("#game-result").css("color", "green");
@@ -563,7 +629,8 @@ const UI = (function () {
         myTurn = true;
         $("#waiting-message").text("Your turn");
         $("#waiting-message").css("color", "green");
-        $("#waiting-message").css("animation", "none");
+        $("#my-info").css("animation", "blinker 2s step-start infinite");
+        $("#opponent-info").css("animation", "none");
 
         for (const [key, value] of Object.entries(ships)) {
             if (value.includes(parseInt(id))) {
@@ -694,11 +761,10 @@ const UI = (function () {
     }
 
     function showCheat() {
-        console.log("showing cheat")
         Object.entries(ships).forEach(([key, value]) => {
-            console.log("sinking", opponent, key);
             Socket.cheatSunk(opponent, key, value);
         });
+
     }
 
     return { getUserDisplay, startPreparation, postOpponent, processReady, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, forceShowSunk, showSunk, showCheat };

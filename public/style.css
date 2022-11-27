@@ -304,13 +304,19 @@ body {
 }
 
 .blink {
-    animation: blinker 2s step-start infinite;
+    animation: blinkBorder 1.5s step-start infinite;
     animation-delay: 0.75s;
 }
 
 @keyframes blinker {
     50% {
         opacity: 0;
+    }
+}
+
+@keyframes blinkBorder {
+    50% {
+        border: 5px solid red;
     }
 }
 
