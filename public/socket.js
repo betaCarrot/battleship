@@ -66,7 +66,6 @@ const Socket = (function () {
         });
 
         socket.on("post cheat", (username) => {
-            console.log(username);
             if (Authentication.getUser().username == username) {
                 UI.showCheat();
             }

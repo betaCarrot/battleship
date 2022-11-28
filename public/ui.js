@@ -677,6 +677,7 @@ const UI = (function () {
         $('#missile').css('animation-timing-function', 'linear');
         $('#missile').css('animation-duration', '1.5s');
         $('#missile').on('animationstart', () => {
+            sounds.missile.volume = 0.5;
             sounds.missile.currentTime = 0.75;
             sounds.missile.play();
         });
@@ -692,6 +693,7 @@ const UI = (function () {
             targetsHit++;
             cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
             sounds.missile.pause();
+            sounds.explosion.volume = 0.5;
             sounds.explosion.play();
             $("#result-message").text("Hit!");
             cell.css("background-color", "red");
@@ -705,6 +707,7 @@ const UI = (function () {
             targetsHit++;
             cell.append("<iframe src=\"https://giphy.com/embed/VzYcE4FrtkOhhgirkN\" width=\"120%\"height=\"120%\" frameBorder=\"0\" style=\"pointer-events: none;\"></iframe>");
             sounds.missile.pause();
+            sounds.explosion.volume = 0.5;
             sounds.explosion.play();
             $("#result-message").text("Hit!");
             cell.css("background-color", "red");
@@ -764,9 +767,12 @@ const UI = (function () {
         Object.entries(ships).forEach(([key, value]) => {
             Socket.cheatSunk(opponent, key, value);
         });
-
     }
 
-    return { getUserDisplay, startPreparation, postOpponent, processReady, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, forceShowSunk, showSunk, showCheat };
+    function getSound() {
+        return sounds;
+    }
+
+    return { getUserDisplay, startPreparation, postOpponent, processReady, checkDisconnection, updateMyBoard, shootMissile, updateOpponentBoard, forceShowSunk, showSunk, showCheat, getSound };
 
 })();
