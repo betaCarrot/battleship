@@ -1,22 +1,12 @@
 [
- {
-  "username": "a",
-  "accuracy": 100
- },
- {
-  "username": "c",
-  "accuracy": 100
- },
- {
-  "username": "b",
-  "accuracy": 100
- },
- {
-  "username": "tony",
-  "accuracy": 83
- },
- {
-  "username": "lee",
-  "accuracy": 20
- }
+    {
+        "username": "tony",
+        "name": "Tony Lee",
+        "accuracy": 83
+    },
+    {
+        "username": "may",
+        "name": "May Wong",
+        "accuracy": 20
+    }
 ]

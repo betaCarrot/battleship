@@ -247,12 +247,12 @@ io.on("connection", (socket) => {
 
     socket.on('insert', (str) => {
         const rankings = JSON.parse(fs.readFileSync("data/ranking.json"));
-        const { username } = socket.request.session.user;
+        const { username, avatar, name } = socket.request.session.user;
         const accuracy = parseInt(str);
         const existing = rankings.find(r => r.username == username);
         const rest = rankings.filter(r => r.username != username);
         if (existing == undefined || existing.accuracy < accuracy) {
-            const entry = { username, accuracy: accuracy };
+            const entry = { username, name, accuracy: accuracy };
             rest.push(entry);
             rest.sort((a, b) => b.accuracy - a.accuracy);
             fs.writeFileSync("data/ranking.json", JSON.stringify(rest, null, " "));

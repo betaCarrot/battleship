@@ -259,12 +259,12 @@ const RankingPanel = (function () {
 
         // Add the user one-by-one
         for (let i = 0; i < rankedUsers.length; i++) {
-            const { username, accuracy } = rankedUsers[i];
+            const { username, name, accuracy } = rankedUsers[i];
             if (Authentication.getUser().username == username) {
-                RankingTable.append('<tr class=\'active-row\'><td>' + (i + 1) + '</td><td>' + username + '</td><td>' + accuracy + '%</td>')
+                RankingTable.append('<tr class=\'active-row\'><td>' + (i + 1) + '</td><td>' + name + '</td><td>' + accuracy + '%</td>')
             }
             else {
-                RankingTable.append('<tr><td>' + (i + 1) + '</td><td>' + username + '</td><td>' + accuracy + '%</td>');
+                RankingTable.append('<tr><td>' + (i + 1) + '</td><td>' + name + '</td><td>' + accuracy + '%</td>');
             }
         }
         $("#stats-overlay").hide();
