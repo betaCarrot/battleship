@@ -449,9 +449,17 @@ button.icon:active {
 
 #invitation-users-panel {
     height: 100%;
-    width: 50%;
+    width: 100%;
     padding: 0;
     background: var(--online-users-panel-background);
+}
+
+#invitation-users-area {
+    flex-grow: 1;
+    width: 100%;
+    align-items: flex-start;
+    justify-content: start;
+    overflow-y: auto;
 }
 
 /* Signin overlay */

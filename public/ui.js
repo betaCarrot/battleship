@@ -144,9 +144,11 @@ const OnlineUsersPanel = (function () {
     // This function updates the online users panel
     const update = function (onlineUsers) {
         const onlineUsersArea = $('#online-users-area');
+        const invitationUsersArea = $('#invitation-users-area');
 
         // Clear the online users area
         onlineUsersArea.empty();
+        invitationUsersArea.empty();
 
         // Get the current user
         const currentUser = Authentication.getUser();
@@ -168,11 +170,21 @@ const OnlineUsersPanel = (function () {
                 }
             }
         }
+
+        if (onlineUsersArea.html() == '') {
+            onlineUsersArea.text('Waiting for users...');
+        }
+
+        if (invitationUsersArea.html() == '') {
+            invitationUsersArea.text('Waiting for invitations...');
+        }
     };
 
     // This function adds a user in the panel
     const addUser = function (user) {
         const onlineUsersArea = $('#online-users-area');
+
+        onlineUsersArea.empty();
 
         // Find the user
         const userDiv = onlineUsersArea.find('#username-' + user.username);
@@ -204,10 +216,15 @@ const OnlineUsersPanel = (function () {
 
         const invitationDiv = invitationUsersArea.find('#username-' + user.username);
         if (invitationDiv.length > 0) invitationDiv.remove();
+
+        if (onlineUsersArea.html() == '') {
+            onlineUsersArea.text('Waiting for users...');
+        }
     };
 
     const processInvite = function (user) {
         const invitationUsersArea = $('#invitation-users-area');
+        invitationUsersArea.empty();
         invitationUsersArea.append(
             $('<div id=\'username-' + user.username + '\' class=\'row\'></div>')
                 .append(UI.getUserDisplay(user)).append($('<button class= \'invitation\' id=\'accept-' + user.username + '\'>&#x2705;</button>')).append($('<button class= \'invitation\' id=\'reject-' + user.username + '\'>&#x274C;</button>')));
@@ -221,6 +238,9 @@ const OnlineUsersPanel = (function () {
         $('#invitation-users-area').on('click', '#reject-' + user.username, () => {
             const invitationDiv = invitationUsersArea.find('#username-' + user.username);
             if (invitationDiv.length > 0) invitationDiv.remove();
+            if (invitationUsersArea.html() == '') {
+                invitationUsersArea.text('Waiting for invitations...');
+            }
             Socket.reject(user.username);
         });
     }
