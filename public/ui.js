@@ -211,11 +211,13 @@ const OnlineUsersPanel = (function () {
         invitationUsersArea.append(
             $('<div id=\'username-' + user.username + '\' class=\'row\'></div>')
                 .append(UI.getUserDisplay(user)).append($('<button class= \'invitation\' id=\'accept-' + user.username + '\'>&#x2705;</button>')).append($('<button class= \'invitation\' id=\'reject-' + user.username + '\'>&#x274C;</button>')));
+        $('#invitation-users-area').off('click', '#accept-' + user.username);
         $('#invitation-users-area').on('click', '#accept-' + user.username, () => {
             UI.startPreparation(user.username, false);
             UI.postOpponent(user);
             Socket.accept(user.username);
         });
+        $('#invitation-users-area').off('click', '#reject-' + user.username);
         $('#invitation-users-area').on('click', '#reject-' + user.username, () => {
             const invitationDiv = invitationUsersArea.find('#username-' + user.username);
             if (invitationDiv.length > 0) invitationDiv.remove();
@@ -307,6 +309,8 @@ const UI = (function () {
     let opponentReadied = false;
 
     let inGame = false;
+
+    let showingRanking = false;
 
     let myTurn = false;
 
@@ -597,7 +601,7 @@ const UI = (function () {
     }
 
     function checkDisconnection(username) {
-        if (inGame && opponent && opponent == username) {
+        if (!showingRanking && opponent && opponent == username) {
             alert("Opponent has disconnected");
             window.location.reload();
         }
@@ -622,6 +626,7 @@ const UI = (function () {
         Socket.insert(accuracy);
         $("#accuracy").text(accuracy + '%');
         $("#stats-overlay").show();
+        showingRanking = true;
     }
 
     function updateMyBoard(id) {

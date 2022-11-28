@@ -156,6 +156,7 @@ const Socket = (function () {
     }
 
     const accept = function (username) {
+        console.log("emitting accept");
         OnlineUsersPanel.hide();
         socket.emit("accept", username);
     }

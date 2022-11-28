@@ -106,7 +106,14 @@ app.post("/signin", (req, res) => {
     ].password;
     if (!bcrypt.compareSync(password, hashedPassword)) {
         res.json({
-            status: "error", error: "Password does not mach."
+            status: "error", error: "Password does not match."
+        });
+        return;
+    }
+
+    if (onlineUsers[username]) {
+        res.json({
+            status: "error", error: "User has already signed-in."
         });
         return;
     }
@@ -168,7 +175,6 @@ const httpServer = createServer(app);
 const io = new Server(httpServer);
 
 const onlineUsers = {};
-const inGameUsers = {};
 
 io.on("connection", (socket) => {
     if (socket.request.session.user) {
